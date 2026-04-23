@@ -5,24 +5,24 @@ import WebAuthn from "next-auth/providers/webauthn";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 
-// IMPORT THE CENTRALIZED CLIENT INSTEAD OF CREATING A NEW ONE
-import { prisma } from "./lib/prisma";
+// IMPORTANT: This must point to your lib/prisma.ts that has the Pool and Adapter logic
+import { prisma } from "./lib/prisma"; 
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  secret: "this_is_a_temporary_secret_just_to_test_if_it_works",
-  session: { strategy: "jwt" }, 
+  session: { strategy: "jwt" },
   providers: [
-    WebAuthn, 
+    WebAuthn,
     Credentials({
       name: "Password",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "name@example.com" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        // This call was likely the one hitting 127.0.0.1
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string }
         });
@@ -42,7 +42,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   experimental: {
     enableWebAuthn: true,
   },
+  // Ensure this is set for production redirects
+  secret: process.env.AUTH_SECRET,
   pages: {
-    signIn: "/login", 
+    signIn: "/login",
   },
 });
