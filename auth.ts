@@ -43,7 +43,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     enableWebAuthn: true,
   },
   // Ensure this is set for production redirects
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.BETTER_AUTH_SECRET,
   pages: {
     signIn: "/login",
   },
