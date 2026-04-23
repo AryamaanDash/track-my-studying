@@ -1,64 +1,99 @@
-import Image from "next/image";
+// app/page.tsx
+import { auth, signOut } from "../auth";
+import { redirect } from "next/navigation";
+import { prisma } from "../lib/prisma";
+import { addStudySession } from "./actions";
+import StudyCharts from "../components/StudyCharts";
+import { Activity, LogOut } from "lucide-react";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  
+  // Protect the route - kick them to login if not authenticated
+  if (!session?.user?.email) {
+    redirect("/login");
+  }
+
+  // Fetch the user and their data
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    include: {
+      studySessions: {
+        orderBy: { date: 'desc' }
+      }
+    }
+  });
+
+  if (!user) redirect("/login");
+
+  const totalHours = user.studySessions.reduce((acc, curr) => acc + curr.hours, 0);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-neutral-950 text-neutral-50 p-6 md:p-10 font-sans">
+      <header className="flex justify-between items-center mb-10 border-b border-neutral-800 pb-6 max-w-7xl mx-auto">
+        <h1 className="text-2xl font-bold tracking-tight">TrackMy<span className="text-emerald-500">Studying</span></h1>
+        
+        <div className="flex items-center gap-6">
+          <span className="text-sm text-neutral-400">{session.user.email}</span>
+          <form action={async () => {
+            "use server";
+            await signOut({ redirectTo: "/login" });
+          }}>
+             <button className="flex items-center gap-2 text-neutral-400 hover:text-red-400 transition-colors text-sm">
+               <LogOut className="w-4 h-4" /> Sign Out
+             </button>
+          </form>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+
+      <main className="grid grid-cols-1 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        
+        {/* Left Column: Input Form & Recent History */}
+        <section className="xl:col-span-1 space-y-8">
+          
+          {/* Quick Add Widget */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 shadow-2xl">
+            <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-emerald-500" /> Log Session
+            </h2>
+            <form action={addStudySession} className="space-y-4">
+              <div>
+                <label className="text-xs text-neutral-400 uppercase tracking-wider mb-2 block">Subject</label>
+                <input name="subject" type="text" placeholder="e.g., ICS 45C" required className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+              <div>
+                <label className="text-xs text-neutral-400 uppercase tracking-wider mb-2 block">Hours</label>
+                <input name="hours" type="number" step="0.1" placeholder="2.5" required className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+              <div>
+                <label className="text-xs text-neutral-400 uppercase tracking-wider mb-2 block">When?</label>
+                <input name="date" type="datetime-local" required className="w-full bg-neutral-950 border border-neutral-800 text-neutral-400 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+              <button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                Commit Hours
+              </button>
+            </form>
+          </div>
+
+          {/* KPI Widget */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col justify-center text-center">
+            <span className="text-neutral-400 text-sm mb-1 uppercase tracking-wider">Total Time Engineered</span>
+            <span className="text-5xl font-bold text-emerald-400">{totalHours.toFixed(1)} <span className="text-2xl text-neutral-500">hrs</span></span>
+          </div>
+        </section>
+
+        {/* Right Column: Interactive Charts */}
+        <section className="xl:col-span-2">
+          {user.studySessions.length > 0 ? (
+            <StudyCharts sessions={user.studySessions} />
+          ) : (
+             <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 h-full flex flex-col items-center justify-center text-neutral-500 min-h-[400px]">
+                <Activity className="w-12 h-12 mb-4 opacity-20" />
+                <p>Log your first session to generate your data pipeline.</p>
+             </div>
+          )}
+        </section>
+
       </main>
     </div>
   );

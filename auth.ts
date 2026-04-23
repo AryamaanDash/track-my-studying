@@ -3,20 +3,21 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import WebAuthn from "next-auth/providers/webauthn";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+// IMPORT THE CENTRALIZED CLIENT INSTEAD OF CREATING A NEW ONE
+import { prisma } from "./lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  secret: "this_is_a_temporary_secret_just_to_test_if_it_works",
   session: { strategy: "jwt" }, // Required for Credentials provider
   providers: [
     WebAuthn, // Automatically handles Biometrics/Passkeys
     Credentials({
       name: "Password",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "student@uci.edu" },
+        email: { label: "Email", type: "email", placeholder: "name@example.com" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
@@ -42,6 +43,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     enableWebAuthn: true,
   },
   pages: {
-    signIn: "/login", // We will build this custom page next
+    signIn: "/login", 
   },
 });

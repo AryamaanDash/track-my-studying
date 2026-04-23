@@ -36,7 +36,27 @@ export default function LoginPage() {
         <form
           action={async (formData) => {
             "use server";
-            await signIn("credentials", formData);
+            
+            // We need to import AuthError at the very top of your file to use this:
+            // import { AuthError } from "next-auth";
+            const { AuthError } = await import("next-auth");
+
+            try {
+              await signIn("credentials", {
+                email: formData.get("email"),
+                password: formData.get("password"),
+                redirectTo: "/", // Explicitly tell it to go to the dashboard
+              });
+            } catch (error) {
+              if (error instanceof AuthError) {
+                // This prints the exact reason for failure to your terminal
+                console.error("⚠️ LOGIN FAILED:", error.type);
+              }
+              
+              // Next.js uses errors to trigger redirects under the hood. 
+              // We MUST re-throw the error, or the successful redirect will break!
+              throw error; 
+            }
           }}
           className="space-y-4"
         >
@@ -62,7 +82,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <button className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-50 font-semibold py-3 px-4 rounded-xl transition-colors">
+          <button type="submit" className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-50 font-semibold py-3 px-4 rounded-xl transition-colors">
             Sign in with Password
           </button>
         </form>
