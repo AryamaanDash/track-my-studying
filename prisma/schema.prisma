@@ -5,9 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
 }
-
 // --------------------------------------------------
 // Core Auth.js Models
 // --------------------------------------------------
