@@ -26,7 +26,7 @@ export default async function Home() {
 
   if (!user) redirect("/login");
 
-  const totalHours = user.studySessions.reduce((acc, curr) => acc + curr.hours, 0);
+  const totalHours = user.studySessions.reduce((acc: number, curr) => acc + curr.hours, 0);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-50 p-6 md:p-10 font-sans">
