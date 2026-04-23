@@ -11,9 +11,9 @@ import { prisma } from "./lib/prisma";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   secret: "this_is_a_temporary_secret_just_to_test_if_it_works",
-  session: { strategy: "jwt" }, // Required for Credentials provider
+  session: { strategy: "jwt" }, 
   providers: [
-    WebAuthn, // Automatically handles Biometrics/Passkeys
+    WebAuthn, 
     Credentials({
       name: "Password",
       credentials: {

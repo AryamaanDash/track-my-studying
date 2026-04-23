@@ -6,8 +6,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 // 1. Create a connection pool using your Vercel Postgres URL
 const pool = new Pool({
   connectionString: process.env.POSTGRES_PRISMA_URL,
-  ssl: {
-    rejectUnauthorized: false}
+  ssl: process.env.NODE_ENV === "production" 
+    ? { rejectUnauthorized: false } 
+    : false,
 });
 
 // 2. Wrap the pool in the Prisma adapter
