@@ -1,8 +1,13 @@
-// auth.config.ts
 import type { NextAuthConfig } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+
+const authSecret =
+  process.env.AUTH_SECRET ??
+  process.env.NEXTAUTH_SECRET ??
+  process.env.BETTER_AUTH_SECRET;
 
 export const authConfig = {
+  secret: authSecret,
+  session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
   },
@@ -10,16 +15,9 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname === "/";
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false;
-      }
+      if (isOnDashboard) return isLoggedIn;
       return true;
     },
   },
-  providers: [
-    // We leave this empty or minimal here; 
-    // the actual logic will stay in auth.ts
-    Credentials({}), 
-  ],
+  providers: [],
 } satisfies NextAuthConfig;

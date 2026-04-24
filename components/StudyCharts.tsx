@@ -1,93 +1,175 @@
 // components/StudyCharts.tsx
 "use client";
 
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useState } from "react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444'];
+type StudyChartSession = {
+  id: string;
+  subject: string;
+  hours: number;
+  date: string;
+};
 
-export default function StudyCharts({ sessions }: { sessions: any[] }) {
-  const [timeframe, setTimeframe] = useState("all");
+const COLORS = ["#10b981", "#f59e0b", "#0ea5e9", "#ef4444", "#14b8a6"];
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
 
-  // 1. Filter data based on selected timeframe
-  const filteredSessions = sessions.filter(session => {
+function getDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export default function StudyCharts({ sessions }: { sessions: StudyChartSession[] }) {
+  const [timeframe, setTimeframe] = useState<"week" | "month" | "year" | "all">("all");
+  const [now] = useState(() => Date.now());
+
+  const filteredSessions = sessions.filter((session) => {
     if (timeframe === "all") return true;
-    const sessionDate = new Date(session.date);
-    const now = new Date();
-    const daysDiff = (now.getTime() - sessionDate.getTime()) / (1000 * 3600 * 24);
-    
+
+    const sessionTime = new Date(session.date).getTime();
+
+    if (Number.isNaN(sessionTime)) return false;
+
+    const daysDiff = (now - sessionTime) / (1000 * 3600 * 24);
+
     if (timeframe === "week") return daysDiff <= 7;
     if (timeframe === "month") return daysDiff <= 30;
     if (timeframe === "year") return daysDiff <= 365;
+
     return true;
   });
 
-  // 2. Aggregate data for the Pie Chart (By Subject)
-  const subjectTotals = filteredSessions.reduce((acc, curr) => {
-    acc[curr.subject] = (acc[curr.subject] || 0) + curr.hours;
+  const subjectTotals = filteredSessions.reduce<Record<string, number>>((acc, session) => {
+    acc[session.subject] = (acc[session.subject] || 0) + session.hours;
     return acc;
   }, {});
-  
-  const pieData = Object.keys(subjectTotals).map(key => ({
-    name: key,
-    value: subjectTotals[key]
+
+  const pieData = Object.entries(subjectTotals).map(([name, value]) => ({
+    name,
+    value,
   }));
 
-  // 3. Aggregate data for the Bar Chart (By Date)
-  const dateTotals = filteredSessions.reduce((acc, curr) => {
-    const dateStr = new Date(curr.date).toLocaleDateString();
-    acc[dateStr] = (acc[dateStr] || 0) + curr.hours;
+  const dateTotals = filteredSessions.reduce<
+    Record<string, { date: string; label: string; hours: number }>
+  >((acc, session) => {
+    const sessionDate = new Date(session.date);
+
+    if (Number.isNaN(sessionDate.getTime())) {
+      return acc;
+    }
+
+    const dateKey = getDateKey(sessionDate);
+
+    acc[dateKey] ??= {
+      date: dateKey,
+      label: dateFormatter.format(sessionDate),
+      hours: 0,
+    };
+
+    acc[dateKey].hours += session.hours;
     return acc;
   }, {});
 
-  const barData = Object.keys(dateTotals)
-    .map(key => ({ date: key, hours: dateTotals[key] }))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const barData = Object.values(dateTotals).sort((a, b) => a.date.localeCompare(b.date));
+  const hasData = filteredSessions.length > 0;
 
   return (
     <div className="space-y-6">
-      {/* Timeframe Controls */}
       <div className="flex gap-2 bg-neutral-900 p-1 rounded-lg w-fit">
-        {['week', 'month', 'year', 'all'].map((t) => (
+        {["week", "month", "year", "all"].map((timeframeOption) => (
           <button
-            key={t}
-            onClick={() => setTimeframe(t)}
+            key={timeframeOption}
+            onClick={() =>
+              setTimeframe(timeframeOption as "week" | "month" | "year" | "all")
+            }
             className={`px-4 py-1 rounded-md text-sm capitalize transition-colors ${
-              timeframe === t ? "bg-neutral-700 text-neutral-50" : "text-neutral-400 hover:text-neutral-200"
+              timeframe === timeframeOption
+                ? "bg-neutral-700 text-neutral-50"
+                : "text-neutral-400 hover:text-neutral-200"
             }`}
           >
-            {t}
+            {timeframeOption}
           </button>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bar Graph */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 h-[350px]">
           <h3 className="text-neutral-400 mb-4 text-sm uppercase tracking-wider">Hours Studied</h3>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={barData}>
-              <XAxis dataKey="date" stroke="#525252" fontSize={12} />
-              <YAxis stroke="#525252" fontSize={12} />
-              <Tooltip cursor={{fill: '#262626'}} contentStyle={{backgroundColor: '#171717', border: 'none', borderRadius: '8px', color: '#fff'}} />
-              <Bar dataKey="hours" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {hasData ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={barData}>
+                <XAxis dataKey="label" stroke="#525252" fontSize={12} />
+                <YAxis stroke="#525252" fontSize={12} />
+                <Tooltip
+                  cursor={{ fill: "#262626" }}
+                  contentStyle={{
+                    backgroundColor: "#171717",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "#fff",
+                  }}
+                  formatter={(value) => [`${Number(value).toFixed(1)} hrs`, "Hours"]}
+                />
+                <Bar dataKey="hours" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-neutral-500">
+              No study sessions match this timeframe yet.
+            </div>
+          )}
         </div>
 
-        {/* Pie Chart */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 h-[350px]">
           <h3 className="text-neutral-400 mb-4 text-sm uppercase tracking-wider">Subject Distribution</h3>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{backgroundColor: '#171717', border: 'none', borderRadius: '8px', color: '#fff'}} />
-            </PieChart>
-          </ResponsiveContainer>
+          {hasData ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  label
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#171717",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "#fff",
+                  }}
+                  formatter={(value) => [`${Number(value).toFixed(1)} hrs`, "Hours"]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-neutral-500">
+              Add a study session to generate your charts.
+            </div>
+          )}
         </div>
       </div>
     </div>

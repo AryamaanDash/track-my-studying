@@ -1,4 +1,3 @@
-// app/page.tsx
 import { auth, signOut } from "../auth";
 import { redirect } from "next/navigation";
 import { prisma } from "../lib/prisma";
@@ -8,28 +7,37 @@ import { Activity, LogOut } from "lucide-react";
 
 export default async function Home() {
   const session = await auth();
-  
-  // Protect the route - kick them to login if not authenticated
+
   if (!session?.user?.email) {
     redirect("/login");
   }
 
-  // Fetch the user and their data
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    include: {
+    select: {
+      email: true,
       studySessions: {
-        orderBy: { date: 'desc' }
-      }
-    }
+        select: {
+          id: true,
+          subject: true,
+          hours: true,
+          date: true,
+        },
+        orderBy: { date: "desc" },
+      },
+    },
   });
 
   if (!user) redirect("/login");
 
   const totalHours = user.studySessions.reduce(
-  (acc: number, curr: { hours: number }) => acc + curr.hours, 
-  0
-);
+    (sum, studySession) => sum + studySession.hours,
+    0
+  );
+  const chartSessions = user.studySessions.map((studySession) => ({
+    ...studySession,
+    date: studySession.date.toISOString(),
+  }));
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-50 p-6 md:p-10 font-sans">
@@ -88,7 +96,7 @@ export default async function Home() {
         {/* Right Column: Interactive Charts */}
         <section className="xl:col-span-2">
           {user.studySessions.length > 0 ? (
-            <StudyCharts sessions={user.studySessions} />
+            <StudyCharts sessions={chartSessions} />
           ) : (
              <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 h-full flex flex-col items-center justify-center text-neutral-500 min-h-[400px]">
                 <Activity className="w-12 h-12 mb-4 opacity-20" />

@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Track My Studying
 
-## Getting Started
+A small Next.js study tracker with Auth.js credentials login, Prisma, PostgreSQL, and Recharts.
 
-First, run the development server:
+## Local setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Copy `.env.example` to `.env.local`.
+2. Set `AUTH_SECRET`.
+3. Set `DATABASE_URL` and `PRISMA_DATABASE_URL` to your PostgreSQL connection string.
+4. Install dependencies with `npm install`.
+5. Start the app with `npm run dev`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Useful scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm run dev` starts the local Next.js dev server.
+- `npm run lint` runs ESLint directly, which is the supported Next.js 16 workflow.
+- `npm run typecheck` runs TypeScript checks.
+- `npm run db:migrate:deploy` applies Prisma migrations to the configured database.
+- `npm run build` generates the Prisma client, applies migrations, and builds the production app.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Vercel deployment notes
 
-## Learn More
+- Set `AUTH_SECRET` in Vercel Project Settings.
+- Set `PRISMA_DATABASE_URL` or `POSTGRES_PRISMA_URL` in Vercel Project Settings.
+- If your database provider only gives you one connection string, set `DATABASE_URL` and `PRISMA_DATABASE_URL` to that same value.
+- The production build now runs `prisma migrate deploy`, so the auth and study tables are created during deployment.
 
-To learn more about Next.js, take a look at the following resources:
+## Current auth scope
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project currently supports email/password authentication only. The broken passkey placeholder flow was removed so the deployed app no longer offers a provider that is not configured.
