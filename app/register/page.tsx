@@ -1,31 +1,98 @@
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { UserPlus, Mail, Lock } from "lucide-react";
-import { prisma } from "../../lib/prisma";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
+const registerErrorMessages: Record<string, string> = {
+  missing_fields: "Enter both an email address and a password to create your account.",
+  invalid_email: "Enter a valid email address.",
+  invalid_password: "Choose a password between 8 and 72 characters long.",
+  account_exists: "An account with that email address already exists.",
+};
 
-export default function RegisterPage() {
+function getSearchParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function isUniqueConstraintError(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"
+  );
+}
+
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    error?: string | string[];
+  }>;
+}) {
+  const session = await auth();
+
+  if (session?.user?.email) {
+    redirect("/");
+  }
+
+  const params = await searchParams;
+  const errorMessage = registerErrorMessages[getSearchParam(params.error) ?? ""];
+
   async function registerUser(formData: FormData) {
     "use server";
-    
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
 
-    if (!email || !password) return;
+    const emailValue = formData.get("email");
+    const passwordValue = formData.get("password");
+    const email =
+      typeof emailValue === "string" ? emailValue.trim().toLowerCase() : "";
+    const password = typeof passwordValue === "string" ? passwordValue : "";
+    const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    // 1. Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (!email || !password) {
+      redirect("/register?error=missing_fields");
+    }
 
-    // 2. Save the user to the database
-    await prisma.user.create({
-      data: {
-        email,
-        passwordHash: hashedPassword,
-      },
+    if (!hasValidEmail) {
+      redirect("/register?error=invalid_email");
+    }
+
+    if (password.length < 8 || password.length > 72) {
+      redirect("/register?error=invalid_password");
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
     });
 
-    // 3. Send them to the login page
-    redirect("/login");
+    if (existingUser) {
+      redirect("/register?error=account_exists");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    let errorCode: "account_exists" | null = null;
+
+    try {
+      await prisma.user.create({
+        data: {
+          email,
+          passwordHash: hashedPassword,
+        },
+      });
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        errorCode = "account_exists";
+      } else {
+        throw error;
+      }
+    }
+
+    if (errorCode) {
+      redirect(`/register?error=${errorCode}`);
+    }
+
+    redirect("/login?success=account_created");
   }
 
   return (
@@ -38,6 +105,12 @@ export default function RegisterPage() {
           <p className="text-neutral-400 text-sm">Sign up to start tracking your hours.</p>
         </div>
 
+        {errorMessage ? (
+          <p className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {errorMessage}
+          </p>
+        ) : null}
+
         <form action={registerUser} className="space-y-4">
           <div className="relative">
             <Mail className="absolute left-4 top-3.5 w-5 h-5 text-neutral-500" />
@@ -45,6 +118,7 @@ export default function RegisterPage() {
               name="email"
               type="email"
               placeholder="Email address"
+              autoComplete="email"
               required
               className="w-full bg-neutral-950 border border-neutral-800 text-neutral-50 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
@@ -56,6 +130,8 @@ export default function RegisterPage() {
               name="password"
               type="password"
               placeholder="Password"
+              autoComplete="new-password"
+              minLength={8}
               required
               className="w-full bg-neutral-950 border border-neutral-800 text-neutral-50 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
@@ -66,6 +142,13 @@ export default function RegisterPage() {
             Register
           </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-neutral-400">
+          Already have an account?{" "}
+          <Link href="/login" className="text-emerald-400 hover:text-emerald-300">
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );

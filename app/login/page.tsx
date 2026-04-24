@@ -1,7 +1,41 @@
-import { signIn } from "@/auth";
-import { Fingerprint, Lock, Mail } from "lucide-react"; 
+import Link from "next/link";
+import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
+import { Lock, Mail } from "lucide-react";
+import { auth, signIn } from "@/auth";
 
-export default function LoginPage() {
+const loginErrorMessages: Record<string, string> = {
+  invalid_credentials: "That email and password combination didn't match our records.",
+  missing_fields: "Enter both your email address and password to sign in.",
+  server: "We couldn't sign you in right now. Please try again in a moment.",
+};
+
+const loginSuccessMessages: Record<string, string> = {
+  account_created: "Your account is ready. Sign in below to start tracking your study time.",
+};
+
+function getSearchParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    error?: string | string[];
+    success?: string | string[];
+  }>;
+}) {
+  const session = await auth();
+
+  if (session?.user?.email) {
+    redirect("/");
+  }
+
+  const params = await searchParams;
+  const errorMessage = loginErrorMessages[getSearchParam(params.error) ?? ""];
+  const successMessage = loginSuccessMessages[getSearchParam(params.success) ?? ""];
+
   return (
     <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-3xl p-8 shadow-2xl">
@@ -9,54 +43,54 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-neutral-50 tracking-tight mb-2">
             TrackMy<span className="text-emerald-500">Studying</span>
           </h1>
-          <p className="text-neutral-400 text-sm">Sign in to log your hours.</p>
+          <p className="text-neutral-400 text-sm">Sign in to track your study sessions.</p>
         </div>
 
-        {/* Biometric Login (WebAuthn) */}
-        <form
-          action={async () => {
-            "use server";
-            await signIn("webauthn", { redirectTo: "/" });
-          }}
-          className="mb-6"
-        >
-          <button className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-semibold py-3 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-            <Fingerprint className="w-5 h-5" />
-            Sign in with Passkey
-          </button>
-        </form>
+        {successMessage ? (
+          <p className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+            {successMessage}
+          </p>
+        ) : null}
 
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1 h-px bg-neutral-800"></div>
-          <span className="text-xs text-neutral-500 uppercase tracking-wider">or</span>
-          <div className="flex-1 h-px bg-neutral-800"></div>
-        </div>
+        {errorMessage ? (
+          <p className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {errorMessage}
+          </p>
+        ) : null}
 
-        {/* Standard Password Login */}
         <form
           action={async (formData) => {
             "use server";
-            
-            // We need to import AuthError at the very top of your file to use this:
-            // import { AuthError } from "next-auth";
-            const { AuthError } = await import("next-auth");
+
+            const emailValue = formData.get("email");
+            const passwordValue = formData.get("password");
+            const email =
+              typeof emailValue === "string" ? emailValue.trim().toLowerCase() : "";
+            const password =
+              typeof passwordValue === "string" ? passwordValue : "";
+
+            if (!email || !password) {
+              redirect("/login?error=missing_fields");
+            }
+
+            let errorCode: "invalid_credentials" | "server" | null = null;
 
             try {
               await signIn("credentials", {
-                email: formData.get("email"),
-                password: formData.get("password"),
-                redirectTo: "/", // Explicitly tell it to go to the dashboard
+                email,
+                password,
+                redirectTo: "/",
               });
             } catch (error) {
               if (error instanceof AuthError) {
-                // This prints the exact reason for failure to your terminal
-                console.error("⚠️ LOGIN FAILED:", error.type);
+                errorCode =
+                  error.type === "CredentialsSignin" ? "invalid_credentials" : "server";
+              } else {
+                throw error;
               }
-              
-              // Next.js uses errors to trigger redirects under the hood. 
-              // We MUST re-throw the error, or the successful redirect will break!
-              throw error; 
             }
+
+            redirect(`/login?error=${errorCode ?? "server"}`);
           }}
           className="space-y-4"
         >
@@ -66,6 +100,7 @@ export default function LoginPage() {
               name="email"
               type="email"
               placeholder="Email address"
+              autoComplete="email"
               required
               className="w-full bg-neutral-950 border border-neutral-800 text-neutral-50 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
@@ -77,6 +112,7 @@ export default function LoginPage() {
               name="password"
               type="password"
               placeholder="Password"
+              autoComplete="current-password"
               required
               className="w-full bg-neutral-950 border border-neutral-800 text-neutral-50 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
@@ -86,6 +122,13 @@ export default function LoginPage() {
             Sign in with Password
           </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-neutral-400">
+          Need an account?{" "}
+          <Link href="/register" className="text-emerald-400 hover:text-emerald-300">
+            Register here
+          </Link>
+        </p>
       </div>
     </div>
   );

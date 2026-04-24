@@ -17,17 +17,13 @@ model User {
   email         String?         @unique
   emailVerified DateTime?
   image         String?
-  
-  // Custom field for standard username/password fallback
+
   passwordHash  String?         
 
   accounts      Account[]
   sessions      Session[]
-  
-  // Required for WebAuthn (Biometrics/Passkeys)
-  Authenticator Authenticator[] 
-  
-  // Relation to your domain data
+  authenticator Authenticator[]
+
   studySessions StudySession[]  
 
   createdAt     DateTime        @default(now())
@@ -74,10 +70,6 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
-
-// --------------------------------------------------
-// WebAuthn Passkey Model
-// --------------------------------------------------
 
 model Authenticator {
   credentialID         String  @unique
