@@ -7,13 +7,13 @@
   },
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "node scripts/require-auth-secret.mjs && prisma generate && node scripts/require-database-url.mjs && prisma migrate deploy && next build",
     "build:app": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
-    "db:migrate:deploy": "prisma migrate deploy"
+    "db:migrate:deploy": "node scripts/require-database-url.mjs && prisma migrate deploy"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

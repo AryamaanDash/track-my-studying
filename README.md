@@ -24,7 +24,7 @@ A small Next.js study tracker with Auth.js credentials login, Prisma, PostgreSQL
 
 1. Import the GitHub repository into Vercel and keep the project root as the repository root.
 2. Use the Next.js framework preset. Vercel should use `npm install` and `npm run build`.
-3. Set `AUTH_SECRET` in Vercel Project Settings. Generate it with `openssl rand -base64 32`.
+3. Set `AUTH_SECRET` in Vercel Project Settings for every environment you deploy to, including Production and Preview if you use both. Generate it with `openssl rand -base64 32`, then redeploy so the function runtime receives the new secret.
 4. Add a PostgreSQL database. Vercel Postgres works directly; other providers are fine if they expose a Postgres connection string with SSL.
 5. Set a runtime database URL: `PRISMA_DATABASE_URL`, `POSTGRES_PRISMA_URL`, `DATABASE_URL`, or `POSTGRES_URL`.
 6. If your provider exposes a direct/non-pooled migration URL, set `PRISMA_MIGRATE_DATABASE_URL`, `DIRECT_URL`, or `POSTGRES_URL_NON_POOLING`. This is preferred for `prisma migrate deploy`.

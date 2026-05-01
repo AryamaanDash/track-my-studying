@@ -26,6 +26,9 @@ function firstPresentEnv(keys: readonly string[], source: EnvSource = process.en
   return undefined;
 }
 
+export const prismaGeneratePlaceholderUrl =
+  "postgresql://user:password@localhost:5432/prisma_generate_placeholder";
+
 export function getRuntimeDatabaseUrl(source?: EnvSource) {
   return firstPresentEnv(runtimeDatabaseUrlKeys, source);
 }
@@ -36,6 +39,12 @@ export function getMigrationDatabaseUrl(source?: EnvSource) {
 
 export function runtimeDatabaseUrlErrorMessage() {
   return `Missing database connection string. Set one of: ${runtimeDatabaseUrlKeys.join(
+    ", "
+  )}.`;
+}
+
+export function migrationDatabaseUrlErrorMessage() {
+  return `Missing database connection string for Prisma migrations. Set one of: ${migrationDatabaseUrlKeys.join(
     ", "
   )}.`;
 }
