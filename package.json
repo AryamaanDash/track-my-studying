@@ -6,7 +6,7 @@
     "node": ">=20.9.0"
   },
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --webpack",
     "build": "node scripts/require-auth-secret.mjs && prisma generate && node scripts/require-database-url.mjs && prisma migrate deploy && next build",
     "build:app": "prisma generate && next build",
     "start": "next start",
