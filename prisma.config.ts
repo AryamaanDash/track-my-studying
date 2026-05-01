@@ -2,12 +2,9 @@
 // npm install --save-dev prisma dotenv
 import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
+import { getMigrationDatabaseUrl } from "./lib/env";
 
-const databaseUrl =
-  process.env.PRISMA_DATABASE_URL ??
-  process.env.POSTGRES_PRISMA_URL ??
-  process.env.DATABASE_URL ??
-  process.env.POSTGRES_URL;
+const databaseUrl = getMigrationDatabaseUrl();
 
 export default defineConfig({
   schema: "prisma/schema.prisma",

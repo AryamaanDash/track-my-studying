@@ -1,42 +1,69 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import { getRuntimeDatabaseUrl, runtimeDatabaseUrlErrorMessage } from "./env";
 
-const connectionString =
-  process.env.PRISMA_DATABASE_URL ??
-  process.env.POSTGRES_PRISMA_URL ??
-  process.env.DATABASE_URL ??
-  process.env.POSTGRES_URL;
-
-if (!connectionString) {
-  throw new Error(
-    "Missing database connection string. Set PRISMA_DATABASE_URL, POSTGRES_PRISMA_URL, DATABASE_URL, or POSTGRES_URL."
-  );
-}
-
-const useSsl = !/localhost|127\.0\.0\.1/.test(connectionString);
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
   pgPool?: Pool;
 };
 
-const pool =
-  globalForPrisma.pgPool ??
-  new Pool({
+function getPoolMax() {
+  const parsed = Number(process.env.PGPOOL_MAX ?? 5);
+
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 5;
+}
+
+function shouldUseSsl(connectionString: string) {
+  const isLocalDatabase = /localhost|127\.0\.0\.1|\[::1\]/.test(connectionString);
+  const disablesSsl = /sslmode=disable/i.test(connectionString);
+
+  return !isLocalDatabase && !disablesSsl;
+}
+
+function getPool() {
+  if (globalForPrisma.pgPool) {
+    return globalForPrisma.pgPool;
+  }
+
+  const connectionString = getRuntimeDatabaseUrl();
+
+  if (!connectionString) {
+    throw new Error(runtimeDatabaseUrlErrorMessage());
+  }
+
+  const pool = new Pool({
     connectionString,
-    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+    max: getPoolMax(),
+    ...(shouldUseSsl(connectionString)
+      ? { ssl: { rejectUnauthorized: false } }
+      : {}),
   });
 
-if (process.env.NODE_ENV !== "production") {
   globalForPrisma.pgPool = pool;
+
+  return pool;
 }
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter: new PrismaPg(pool),
+export function getPrisma() {
+  if (globalForPrisma.prisma) {
+    return globalForPrisma.prisma;
+  }
+
+  const prisma = new PrismaClient({
+    adapter: new PrismaPg(getPool()),
   });
 
-if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
+
+  return prisma;
 }
+
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, property, receiver) {
+    const client = getPrisma();
+    const value = Reflect.get(client, property, receiver);
+
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});

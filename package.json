@@ -2,12 +2,17 @@
   "name": "track-my-studying",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev --turbo",
     "build": "prisma generate && prisma migrate deploy && next build",
+    "build:app": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
     "db:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
@@ -30,6 +35,7 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "prisma": "^7.8.0",

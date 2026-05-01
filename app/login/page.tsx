@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Lock, Mail } from "lucide-react";
 import { auth, signIn } from "@/auth";
 
@@ -26,6 +27,8 @@ export default async function LoginPage({
     success?: string | string[];
   }>;
 }) {
+  await connection();
+
   const session = await auth();
 
   if (session?.user?.email) {

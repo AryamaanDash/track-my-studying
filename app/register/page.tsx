@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { UserPlus, Mail, Lock } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -30,6 +31,8 @@ export default async function RegisterPage({
     error?: string | string[];
   }>;
 }) {
+  await connection();
+
   const session = await auth();
 
   if (session?.user?.email) {

@@ -1,11 +1,14 @@
 import { auth, signOut } from "../auth";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { prisma } from "../lib/prisma";
 import { addStudySession } from "./actions";
 import StudyCharts from "../components/StudyCharts";
 import { Activity, LogOut } from "lucide-react";
 
 export default async function Home() {
+  await connection();
+
   const session = await auth();
 
   if (!session?.user?.email) {
