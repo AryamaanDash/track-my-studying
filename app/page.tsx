@@ -91,7 +91,7 @@ export default async function Home() {
 
           {/* KPI Widget */}
           <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col justify-center text-center">
-            <span className="text-neutral-400 text-sm mb-1 uppercase tracking-wider">Total Time Engineered</span>
+            <span className="text-neutral-400 text-sm mb-1 uppercase tracking-wider">Total Time Spent Studying</span>
             <span className="text-5xl font-bold text-emerald-400">{totalHours.toFixed(1)} <span className="text-2xl text-neutral-500">hrs</span></span>
           </div>
         </section>
