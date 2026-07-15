@@ -26,7 +26,7 @@ export default function StudySessionDateTimeInput() {
       onChange={(event) => setDateTime(event.target.value)}
       step="60"
       suppressHydrationWarning
-      className="w-full bg-neutral-950 border border-neutral-800 text-neutral-50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
+      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-accent [color-scheme:var(--input-color-scheme)]"
     />
   );
 }

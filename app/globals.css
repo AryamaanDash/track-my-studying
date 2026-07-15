@@ -4,19 +4,108 @@
 @source "../components/**/*.{js,ts,jsx,tsx,mdx}";
 
 :root {
+  color-scheme: light;
+  --background: #f7faf9;
+  --foreground: #172033;
+  --surface: #ffffff;
+  --surface-strong: #eef3f1;
+  --surface-muted: #d9e3df;
+  --border: #d2ddd8;
+  --muted: #64736e;
+  --muted-strong: #40504a;
+  --accent: #047857;
+  --accent-hover: #065f46;
+  --accent-soft: #d1fae5;
+  --accent-foreground: #ffffff;
+  --button: #1f2937;
+  --button-hover: #111827;
+  --button-foreground: #ffffff;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --danger-border: #fca5a5;
+  --danger-foreground: #991b1b;
+  --success-soft: #d1fae5;
+  --success-border: #6ee7b7;
+  --success-foreground: #065f46;
+  --chart-axis: #64748b;
+  --chart-cursor: #e2e8f0;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: #d2ddd8;
+  --chart-tooltip-fg: #172033;
+  --input-color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
   --background: #0a0a0a;
   --foreground: #ededed;
+  --surface: #171717;
+  --surface-strong: #262626;
+  --surface-muted: #404040;
+  --border: #262626;
+  --muted: #a3a3a3;
+  --muted-strong: #d4d4d4;
+  --accent: #10b981;
+  --accent-hover: #34d399;
+  --accent-soft: #052e2b;
+  --accent-foreground: #0a0a0a;
+  --button: #262626;
+  --button-hover: #404040;
+  --button-foreground: #f5f5f5;
+  --danger: #f87171;
+  --danger-soft: #450a0a;
+  --danger-border: #991b1b;
+  --danger-foreground: #fecaca;
+  --success-soft: #052e2b;
+  --success-border: #047857;
+  --success-foreground: #a7f3d0;
+  --chart-axis: #737373;
+  --chart-cursor: #262626;
+  --chart-tooltip-bg: #171717;
+  --chart-tooltip-border: #262626;
+  --chart-tooltip-fg: #ffffff;
+  --input-color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-strong: var(--muted-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-button: var(--button);
+  --color-button-hover: var(--button-hover);
+  --color-button-foreground: var(--button-foreground);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-border: var(--danger-border);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-success-border: var(--success-border);
+  --color-success-foreground: var(--success-foreground);
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+html {
+  background: var(--background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+input,
+textarea,
+select {
+  color-scheme: var(--input-color-scheme);
 }
