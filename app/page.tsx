@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { prisma } from "../lib/prisma";
 import { addStudySession } from "./actions";
 import StudyCharts from "../components/StudyCharts";
+import StudySessionDateTimeInput from "../components/StudySessionDateTimeInput";
 import { Activity, LogOut } from "lucide-react";
 
 export default async function Home() {
@@ -81,7 +82,7 @@ export default async function Home() {
               </div>
               <div>
                 <label className="text-xs text-neutral-400 uppercase tracking-wider mb-2 block">When?</label>
-                <input name="date" type="datetime-local" required className="w-full bg-neutral-950 border border-neutral-800 text-neutral-400 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <StudySessionDateTimeInput />
               </div>
               <button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
                 Commit Hours
