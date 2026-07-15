@@ -21,7 +21,6 @@ type StudyChartSession = {
   date: string;
 };
 
-const COLORS = ["#10b981", "#f59e0b", "#0ea5e9", "#ef4444", "#14b8a6"];
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
@@ -32,6 +31,21 @@ function getDateKey(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function getSubjectColor(subject: string) {
+  const normalizedSubject = subject.trim().toLowerCase();
+  let hash = 0;
+
+  for (let index = 0; index < normalizedSubject.length; index += 1) {
+    hash = (hash * 31 + normalizedSubject.charCodeAt(index)) >>> 0;
+  }
+
+  const hue = hash % 360;
+  const saturation = 62 + (hash % 14);
+  const lightness = 42 + (hash % 10);
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 export default function StudyCharts({ sessions }: { sessions: StudyChartSession[] }) {
@@ -59,10 +73,12 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
     return acc;
   }, {});
 
-  const pieData = Object.entries(subjectTotals).map(([name, value]) => ({
-    name,
-    value,
-  }));
+  const pieData = Object.entries(subjectTotals)
+    .map(([name, value]) => ({
+      name,
+      value,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const dateTotals = filteredSessions.reduce<
     Record<string, { date: string; label: string; hours: number }>
@@ -90,7 +106,7 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2 bg-neutral-900 p-1 rounded-lg w-fit">
+      <div className="flex w-fit gap-2 rounded-lg border border-border bg-surface p-1">
         {["week", "month", "year", "all"].map((timeframeOption) => (
           <button
             key={timeframeOption}
@@ -99,8 +115,8 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
             }
             className={`px-4 py-1 rounded-md text-sm capitalize transition-colors ${
               timeframe === timeframeOption
-                ? "bg-neutral-700 text-neutral-50"
-                : "text-neutral-400 hover:text-neutral-200"
+                ? "bg-surface-muted text-foreground"
+                : "text-muted hover:text-foreground"
             }`}
           >
             {timeframeOption}
@@ -109,20 +125,20 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 h-[350px]">
-          <h3 className="text-neutral-400 mb-4 text-sm uppercase tracking-wider">Hours Studied</h3>
+        <div className="bg-surface border border-border rounded-3xl p-6 h-[350px]">
+          <h3 className="text-muted mb-4 text-sm uppercase tracking-wider">Hours Studied</h3>
           {hasData ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
-                <XAxis dataKey="label" stroke="#525252" fontSize={12} />
-                <YAxis stroke="#525252" fontSize={12} />
+                <XAxis dataKey="label" stroke="var(--chart-axis)" fontSize={12} />
+                <YAxis stroke="var(--chart-axis)" fontSize={12} />
                 <Tooltip
-                  cursor={{ fill: "#262626" }}
+                  cursor={{ fill: "var(--chart-cursor)" }}
                   contentStyle={{
-                    backgroundColor: "#171717",
-                    border: "none",
+                    backgroundColor: "var(--chart-tooltip-bg)",
+                    border: "1px solid var(--chart-tooltip-border)",
                     borderRadius: "8px",
-                    color: "#fff",
+                    color: "var(--chart-tooltip-fg)",
                   }}
                   formatter={(value) => [`${Number(value).toFixed(1)} hrs`, "Hours"]}
                 />
@@ -130,14 +146,14 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-neutral-500">
+            <div className="flex h-full items-center justify-center text-sm text-muted">
               No study sessions match this timeframe yet.
             </div>
           )}
         </div>
 
-        <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 h-[350px]">
-          <h3 className="text-neutral-400 mb-4 text-sm uppercase tracking-wider">Subject Distribution</h3>
+        <div className="bg-surface border border-border rounded-3xl p-6 h-[350px]">
+          <h3 className="text-muted mb-4 text-sm uppercase tracking-wider">Subject Distribution</h3>
           {hasData ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -148,25 +164,28 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
                   cx="50%"
                   cy="50%"
                   outerRadius={100}
-                  label
+                  label={{ fill: "var(--muted-strong)", fontSize: 12 }}
                 >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {pieData.map((entry) => (
+                    <Cell key={entry.name} fill={getSubjectColor(entry.name)} />
                   ))}
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#171717",
-                    border: "none",
+                    backgroundColor: "var(--chart-tooltip-bg)",
+                    border: "1px solid var(--chart-tooltip-border)",
                     borderRadius: "8px",
-                    color: "#fff",
+                    color: "var(--chart-tooltip-fg)",
                   }}
-                  formatter={(value) => [`${Number(value).toFixed(1)} hrs`, "Hours"]}
+                  formatter={(value, name) => [
+                    `${Number(value).toFixed(1)} hrs`,
+                    String(name),
+                  ]}
                 />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-neutral-500">
+            <div className="flex h-full items-center justify-center text-sm text-muted">
               Add a study session to generate your charts.
             </div>
           )}

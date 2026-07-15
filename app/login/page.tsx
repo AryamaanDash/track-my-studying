@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Lock, Mail } from "lucide-react";
 import { auth, signIn } from "@/auth";
+import ThemeSelector from "@/components/ThemeSelector";
 
 const loginErrorMessages: Record<string, string> = {
   invalid_credentials: "That email and password combination didn't match our records.",
@@ -40,23 +41,27 @@ export default async function LoginPage({
   const successMessage = loginSuccessMessages[getSearchParam(params.success) ?? ""];
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-3xl p-8 shadow-2xl">
+    <div className="relative flex min-h-screen items-center justify-center bg-background p-4 text-foreground">
+      <div className="absolute right-4 top-4">
+        <ThemeSelector />
+      </div>
+
+      <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-8 shadow-2xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-neutral-50 tracking-tight mb-2">
-            TrackMy<span className="text-emerald-500">Studying</span>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight mb-2">
+            TrackMy<span className="text-accent">Studying</span>
           </h1>
-          <p className="text-neutral-400 text-sm">Sign in to track your study sessions.</p>
+          <p className="text-muted text-sm">Sign in to track your study sessions.</p>
         </div>
 
         {successMessage ? (
-          <p className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <p className="mb-6 rounded-2xl border border-success-border bg-success-soft px-4 py-3 text-sm text-success-foreground">
             {successMessage}
           </p>
         ) : null}
 
         {errorMessage ? (
-          <p className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <p className="mb-6 rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger-foreground">
             {errorMessage}
           </p>
         ) : null}
@@ -98,37 +103,37 @@ export default async function LoginPage({
           className="space-y-4"
         >
           <div className="relative">
-            <Mail className="absolute left-4 top-3.5 w-5 h-5 text-neutral-500" />
+            <Mail className="absolute left-4 top-3.5 w-5 h-5 text-muted" />
             <input
               name="email"
               type="email"
               placeholder="Email address"
               autoComplete="email"
               required
-              className="w-full bg-neutral-950 border border-neutral-800 text-neutral-50 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full rounded-xl border border-border bg-background py-3 pl-12 pr-4 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
           
           <div className="relative">
-            <Lock className="absolute left-4 top-3.5 w-5 h-5 text-neutral-500" />
+            <Lock className="absolute left-4 top-3.5 w-5 h-5 text-muted" />
             <input
               name="password"
               type="password"
               placeholder="Password"
               autoComplete="current-password"
               required
-              className="w-full bg-neutral-950 border border-neutral-800 text-neutral-50 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full rounded-xl border border-border bg-background py-3 pl-12 pr-4 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
 
-          <button type="submit" className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-50 font-semibold py-3 px-4 rounded-xl transition-colors">
+          <button type="submit" className="w-full rounded-xl bg-button px-4 py-3 font-semibold text-button-foreground transition-colors hover:bg-button-hover">
             Sign in with Password
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-neutral-400">
+        <p className="mt-6 text-center text-sm text-muted">
           Need an account?{" "}
-          <Link href="/register" className="text-emerald-400 hover:text-emerald-300">
+          <Link href="/register" className="text-accent hover:text-accent-hover">
             Register here
           </Link>
         </p>
