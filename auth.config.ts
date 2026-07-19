@@ -15,8 +15,9 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname === "/";
-      if (isOnDashboard) return isLoggedIn;
+      const isProtectedPage =
+        nextUrl.pathname === "/" || nextUrl.pathname.startsWith("/remove-hours");
+      if (isProtectedPage) return isLoggedIn;
       return true;
     },
   },

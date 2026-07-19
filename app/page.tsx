@@ -1,4 +1,5 @@
 import { auth, signOut } from "../auth";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { prisma } from "../lib/prisma";
@@ -6,7 +7,7 @@ import { addStudySession } from "./actions";
 import StudyCharts from "../components/StudyCharts";
 import StudySessionDateTimeInput from "../components/StudySessionDateTimeInput";
 import ThemeSelector from "../components/ThemeSelector";
-import { Activity, LogOut } from "lucide-react";
+import { Activity, LogOut, Trash2 } from "lucide-react";
 
 export default async function Home() {
   await connection();
@@ -50,6 +51,13 @@ export default async function Home() {
         <h1 className="text-2xl font-bold tracking-tight">TrackMy<span className="text-accent">Studying</span></h1>
         
         <div className="flex flex-wrap items-center gap-4 md:gap-6">
+          <Link
+            href="/remove-hours"
+            className="flex items-center gap-2 rounded-xl border border-border bg-surface-strong px-3 py-2 text-sm text-muted transition-colors hover:text-foreground"
+          >
+            <Trash2 className="h-4 w-4" />
+            Remove Hours
+          </Link>
           <ThemeSelector />
           <span className="text-sm text-muted">{session.user.email}</span>
           <form action={async () => {
