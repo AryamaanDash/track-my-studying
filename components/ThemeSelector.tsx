@@ -37,12 +37,30 @@ function subscribeToThemeChanges(onStoreChange: () => void) {
   };
 }
 
+function subscribeToHydration() {
+  return () => {};
+}
+
+function getClientHydrationStatus() {
+  return true;
+}
+
+function getServerHydrationStatus() {
+  return false;
+}
+
 export default function ThemeSelector() {
   const theme = useSyncExternalStore(
     subscribeToThemeChanges,
     getStoredTheme,
     getServerTheme
   );
+  const hasHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    getClientHydrationStatus,
+    getServerHydrationStatus
+  );
+  const selectedTheme = hasHydrated ? theme : getServerTheme();
 
   useEffect(() => {
     applyTheme(theme);
@@ -66,9 +84,9 @@ export default function ThemeSelector() {
       role="group"
     >
       <button
-        aria-pressed={theme === "light"}
+        aria-pressed={selectedTheme === "light"}
         className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
-          theme === "light"
+          selectedTheme === "light"
             ? "bg-surface text-foreground shadow-sm"
             : "text-muted hover:text-foreground"
         }`}
@@ -79,9 +97,9 @@ export default function ThemeSelector() {
         Light
       </button>
       <button
-        aria-pressed={theme === "dark"}
+        aria-pressed={selectedTheme === "dark"}
         className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
-          theme === "dark"
+          selectedTheme === "dark"
             ? "bg-surface text-foreground shadow-sm"
             : "text-muted hover:text-foreground"
         }`}

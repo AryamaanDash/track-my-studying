@@ -87,4 +87,5 @@ export async function deleteSession(id: string) {
   }
 
   revalidatePath("/");
+  revalidatePath("/remove-hours");
 }
