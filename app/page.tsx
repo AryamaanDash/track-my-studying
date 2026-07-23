@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { prisma } from "../lib/prisma";
 import { addStudySession } from "./actions";
+import StudyCalendar from "../components/StudyCalendar";
 import StudyCharts from "../components/StudyCharts";
 import StudySessionDateTimeInput from "../components/StudySessionDateTimeInput";
 import ThemeSelector from "../components/ThemeSelector";
@@ -44,6 +45,7 @@ export default async function Home() {
     ...studySession,
     date: studySession.date.toISOString(),
   }));
+  const calendarFallbackDate = new Date().toISOString();
 
   return (
     <div className="min-h-screen bg-background p-6 font-sans text-foreground md:p-10">
@@ -120,6 +122,8 @@ export default async function Home() {
         </section>
 
       </main>
+
+      <StudyCalendar sessions={chartSessions} fallbackDate={calendarFallbackDate} />
     </div>
   );
 }
