@@ -8,6 +8,7 @@ import StudyCalendar from "../components/StudyCalendar";
 import StudyCharts from "../components/StudyCharts";
 import StudySessionDateTimeInput from "../components/StudySessionDateTimeInput";
 import ThemeSelector from "../components/ThemeSelector";
+import WeeklyStudyCelebration from "../components/WeeklyStudyCelebration";
 import { Activity, LogOut, Trash2 } from "lucide-react";
 
 export default async function Home() {
@@ -72,6 +73,8 @@ export default async function Home() {
           </form>
         </div>
       </header>
+
+      <WeeklyStudyCelebration sessions={chartSessions} />
 
       <main className="grid grid-cols-1 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
         
