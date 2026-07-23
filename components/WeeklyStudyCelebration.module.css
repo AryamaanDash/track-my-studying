@@ -1,0 +1,59 @@
+.card {
+  animation: weekly-celebration-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  position: relative;
+}
+
+.card::before {
+  animation: weekly-celebration-shine 1800ms 350ms cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    color-mix(in srgb, var(--accent-foreground) 28%, transparent) 44%,
+    transparent 68%
+  );
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-115%);
+}
+
+.metricPill {
+  animation: weekly-celebration-pulse 2600ms ease-in-out infinite;
+}
+
+@keyframes weekly-celebration-shine {
+  from {
+    transform: translateX(-115%);
+  }
+
+  to {
+    transform: translateX(115%);
+  }
+}
+
+@keyframes weekly-celebration-in {
+  from {
+    filter: blur(8px);
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes weekly-celebration-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
