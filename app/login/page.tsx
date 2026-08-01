@@ -33,7 +33,7 @@ export default async function LoginPage({
   const session = await auth();
 
   if (session?.user?.email) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   const params = await searchParams;
@@ -87,7 +87,7 @@ export default async function LoginPage({
               await signIn("credentials", {
                 email,
                 password,
-                redirectTo: "/",
+                redirectTo: "/dashboard",
               });
             } catch (error) {
               if (error instanceof AuthError) {

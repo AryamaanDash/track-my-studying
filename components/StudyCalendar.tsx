@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -185,19 +185,17 @@ export default function StudyCalendar({
   }
 
   return (
-    <section className="mx-auto mt-8 max-w-7xl rounded-3xl border border-border bg-surface p-4 shadow-2xl md:p-6">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <section className="mt-20 border-t border-border pt-5">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <CalendarDays className="h-5 w-5 text-accent" />
-            Study Calendar
-          </h2>
+          <p className="font-mono text-xs uppercase tracking-wider text-muted">History</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight">Study calendar</h2>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             aria-label="Previous month"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface-strong text-muted transition-colors hover:text-foreground"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted transition-colors hover:border-foreground hover:text-foreground"
             onClick={goToPreviousMonth}
             type="button"
           >
@@ -208,7 +206,7 @@ export default function StudyCalendar({
           </div>
           <button
             aria-label="Next month"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface-strong text-muted transition-colors hover:text-foreground"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted transition-colors hover:border-foreground hover:text-foreground"
             onClick={goToNextMonth}
             type="button"
           >
@@ -242,10 +240,10 @@ export default function StudyCalendar({
                     totalHours
                   )} studied`}
                   aria-pressed={isSelected}
-                  className={`flex h-16 flex-col items-start justify-between rounded-xl border p-2 text-left transition-colors md:h-20 ${
+                  className={`flex h-16 flex-col items-start justify-between border p-2 text-left transition-colors md:h-20 ${
                     isSelected
-                      ? "border-accent bg-accent-soft text-foreground ring-2 ring-accent"
-                      : "border-border bg-background text-foreground hover:border-accent hover:bg-surface-strong"
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-transparent text-foreground hover:border-foreground"
                   }`}
                   onClick={() => setSelectedDateKey(day.dateKey)}
                   type="button"
@@ -253,7 +251,7 @@ export default function StudyCalendar({
                   <span className="text-sm font-semibold">{day.dayNumber}</span>
                   <span
                     className={`text-[11px] leading-tight ${
-                      hasSessions ? "text-accent" : "text-muted"
+                      isSelected ? "text-background/70" : hasSessions ? "text-foreground" : "text-muted"
                     }`}
                   >
                     {hasSessions ? formatHours(totalHours) : "0.0 hrs"}
@@ -264,13 +262,13 @@ export default function StudyCalendar({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border bg-background p-4">
+        <div className="border-t border-border pt-4 xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
             <div>
               <h3 className="text-sm font-semibold text-foreground">{selectedLabel}</h3>
               <p className="text-xs uppercase tracking-wider text-muted">Daily subjects</p>
             </div>
-            <span className="text-sm font-semibold text-accent">
+            <span className="text-sm font-semibold text-foreground">
               {formatHours(selectedSummary?.totalHours ?? 0)}
             </span>
           </div>
@@ -324,7 +322,7 @@ export default function StudyCalendar({
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex min-h-60 items-center justify-center rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
+            <div className="flex min-h-60 items-center justify-center border-y border-dashed border-border p-6 text-center text-sm text-muted">
               No studying was logged for this date.
             </div>
           )}
