@@ -37,7 +37,7 @@ export default async function RegisterPage({
   const session = await auth();
 
   if (session?.user?.email) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   const params = await searchParams;

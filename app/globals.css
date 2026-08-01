@@ -5,18 +5,18 @@
 
 :root {
   color-scheme: light;
-  --background: #f7faf9;
-  --foreground: #172033;
-  --surface: #ffffff;
-  --surface-strong: #eef3f1;
-  --surface-muted: #d9e3df;
-  --border: #d2ddd8;
-  --muted: #64736e;
-  --muted-strong: #40504a;
-  --accent: #047857;
-  --accent-hover: #065f46;
-  --accent-soft: #d1fae5;
-  --accent-foreground: #ffffff;
+  --background: #f4f3ef;
+  --foreground: #171714;
+  --surface: #f8f7f3;
+  --surface-strong: #ebeae5;
+  --surface-muted: #deddd7;
+  --border: #d8d6cf;
+  --muted: #74736d;
+  --muted-strong: #474640;
+  --accent: #171714;
+  --accent-hover: #34332e;
+  --accent-soft: #e5e3dc;
+  --accent-foreground: #f4f3ef;
   --button: #1f2937;
   --button-hover: #111827;
   --button-foreground: #ffffff;
@@ -27,23 +27,23 @@
   --success-soft: #d1fae5;
   --success-border: #6ee7b7;
   --success-foreground: #065f46;
-  --chart-axis: #64748b;
-  --chart-cursor: #e2e8f0;
-  --chart-tooltip-bg: #ffffff;
-  --chart-tooltip-border: #d2ddd8;
-  --chart-tooltip-fg: #172033;
+  --chart-axis: #8a8880;
+  --chart-cursor: #e5e3dc;
+  --chart-tooltip-bg: #171714;
+  --chart-tooltip-border: #171714;
+  --chart-tooltip-fg: #f4f3ef;
   --input-color-scheme: light;
 }
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --surface: #171717;
-  --surface-strong: #262626;
-  --surface-muted: #404040;
-  --border: #262626;
-  --muted: #a3a3a3;
+  --background: #151512;
+  --foreground: #f0efe9;
+  --surface: #1b1b18;
+  --surface-strong: #262621;
+  --surface-muted: #36352f;
+  --border: #34332d;
+  --muted: #a09e94;
   --muted-strong: #d4d4d4;
   --accent: #10b981;
   --accent-hover: #34d399;
@@ -103,6 +103,23 @@ body {
   color: var(--foreground);
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+
+* { border-color: var(--border); }
+
+::selection { background: var(--foreground); color: var(--background); }
+
+.field {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  padding: 0.7rem 0;
+  color: var(--foreground);
+  outline: none;
+}
+
+.field::placeholder { color: var(--muted); }
+.field:focus { border-color: var(--foreground); }
 
 input,
 textarea,

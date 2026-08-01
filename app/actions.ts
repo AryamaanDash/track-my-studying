@@ -64,7 +64,7 @@ export async function addStudySession(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteSession(id: string) {
@@ -86,6 +86,6 @@ export async function deleteSession(id: string) {
     throw new Error("Study session not found");
   }
 
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/remove-hours");
 }

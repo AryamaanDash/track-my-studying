@@ -80,34 +80,34 @@ export default function ThemeSelector() {
   return (
     <div
       aria-label="Color theme"
-      className="flex w-fit items-center gap-1 rounded-xl border border-border bg-surface-strong p-1 text-sm"
+      className="flex w-fit items-center rounded-full border border-border p-0.5 text-xs"
       role="group"
     >
       <button
         aria-pressed={selectedTheme === "light"}
-        className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
+        className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors ${
           selectedTheme === "light"
-            ? "bg-surface text-foreground shadow-sm"
+            ? "bg-foreground text-background"
             : "text-muted hover:text-foreground"
         }`}
         onClick={() => chooseTheme("light")}
         type="button"
       >
         <Sun className="h-4 w-4" />
-        Light
+        <span className="sr-only sm:not-sr-only">Light</span>
       </button>
       <button
         aria-pressed={selectedTheme === "dark"}
-        className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
+        className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors ${
           selectedTheme === "dark"
-            ? "bg-surface text-foreground shadow-sm"
+            ? "bg-foreground text-background"
             : "text-muted hover:text-foreground"
         }`}
         onClick={() => chooseTheme("dark")}
         type="button"
       >
         <Moon className="h-4 w-4" />
-        Dark
+        <span className="sr-only sm:not-sr-only">Dark</span>
       </button>
     </div>
   );

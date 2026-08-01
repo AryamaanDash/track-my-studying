@@ -49,7 +49,7 @@ function getSubjectColor(subject: string) {
 }
 
 export default function StudyCharts({ sessions }: { sessions: StudyChartSession[] }) {
-  const [timeframe, setTimeframe] = useState<"week" | "month" | "year" | "all">("all");
+  const [timeframe, setTimeframe] = useState<"week" | "month" | "year" | "all">("month");
   const [now] = useState(() => Date.now());
 
   const filteredSessions = sessions.filter((session) => {
@@ -105,17 +105,17 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
   const hasData = filteredSessions.length > 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex w-fit gap-2 rounded-lg border border-border bg-surface p-1">
+    <div>
+      <div className="mb-6 flex w-fit gap-1 rounded-full border border-border p-1">
         {["week", "month", "year", "all"].map((timeframeOption) => (
           <button
             key={timeframeOption}
             onClick={() =>
               setTimeframe(timeframeOption as "week" | "month" | "year" | "all")
             }
-            className={`px-4 py-1 rounded-md text-sm capitalize transition-colors ${
+            className={`rounded-full px-3 py-1 text-xs capitalize transition-colors ${
               timeframe === timeframeOption
-                ? "bg-surface-muted text-foreground"
+                ? "bg-foreground text-background"
                 : "text-muted hover:text-foreground"
             }`}
           >
@@ -124,9 +124,9 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-surface border border-border rounded-3xl p-6 h-[350px]">
-          <h3 className="text-muted mb-4 text-sm uppercase tracking-wider">Hours Studied</h3>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="h-[320px] border-t border-border pt-4">
+          <h3 className="mb-4 font-mono text-xs uppercase tracking-wider text-muted">Hours studied</h3>
           {hasData ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
@@ -142,7 +142,7 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
                   }}
                   formatter={(value) => [`${Number(value).toFixed(1)} hrs`, "Hours"]}
                 />
-                <Bar dataKey="hours" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="hours" fill="var(--foreground)" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -152,8 +152,8 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
           )}
         </div>
 
-        <div className="bg-surface border border-border rounded-3xl p-6 h-[350px]">
-          <h3 className="text-muted mb-4 text-sm uppercase tracking-wider">Subject Distribution</h3>
+        <div className="h-[320px] border-t border-border pt-4">
+          <h3 className="mb-4 font-mono text-xs uppercase tracking-wider text-muted">Subject distribution</h3>
           {hasData ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>

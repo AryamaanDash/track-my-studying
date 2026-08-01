@@ -58,7 +58,7 @@ export default async function RemoveHoursPage() {
       <header className="mx-auto mb-10 flex max-w-5xl flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
         <div>
           <Link
-            href="/"
+            href="/dashboard"
             className="mb-3 inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
