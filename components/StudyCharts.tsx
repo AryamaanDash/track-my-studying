@@ -6,6 +6,7 @@ import {
   Bar,
   BarChart,
   Cell,
+  Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -81,7 +82,7 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const dateTotals = filteredSessions.reduce<
-    Record<string, { date: string; label: string; hours: number }>
+    Record<string, { date: string; label: string; [subject: string]: string | number }>
   >((acc, session) => {
     const sessionDate = new Date(session.date);
 
@@ -94,14 +95,16 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
     acc[dateKey] ??= {
       date: dateKey,
       label: dateFormatter.format(sessionDate),
-      hours: 0,
     };
 
-    acc[dateKey].hours += session.hours;
+    const currentHours = acc[dateKey][session.subject];
+    acc[dateKey][session.subject] =
+      (typeof currentHours === "number" ? currentHours : 0) + session.hours;
     return acc;
   }, {});
 
   const barData = Object.values(dateTotals).sort((a, b) => a.date.localeCompare(b.date));
+  const subjects = Object.keys(subjectTotals).sort((a, b) => a.localeCompare(b));
   const hasData = filteredSessions.length > 0;
 
   return (
@@ -132,6 +135,7 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
               <BarChart data={barData}>
                 <XAxis dataKey="label" stroke="var(--chart-axis)" fontSize={12} />
                 <YAxis stroke="var(--chart-axis)" fontSize={12} />
+                <Legend wrapperStyle={{ fontSize: "12px" }} />
                 <Tooltip
                   cursor={{ fill: "var(--chart-cursor)" }}
                   contentStyle={{
@@ -140,9 +144,20 @@ export default function StudyCharts({ sessions }: { sessions: StudyChartSession[
                     borderRadius: "8px",
                     color: "var(--chart-tooltip-fg)",
                   }}
-                  formatter={(value) => [`${Number(value).toFixed(1)} hrs`, "Hours"]}
+                  formatter={(value, name) => [
+                    `${Number(value).toFixed(1)} hrs`,
+                    String(name),
+                  ]}
                 />
-                <Bar dataKey="hours" fill="var(--foreground)" radius={[2, 2, 0, 0]} />
+                {subjects.map((subject) => (
+                  <Bar
+                    key={subject}
+                    dataKey={subject}
+                    stackId="hours"
+                    fill={getSubjectColor(subject)}
+                    radius={[2, 2, 0, 0]}
+                  />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           ) : (
