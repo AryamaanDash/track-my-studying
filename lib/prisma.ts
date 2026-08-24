@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { attachDatabasePool } from "@vercel/functions";
 import { Pool } from "pg";
 import { getRuntimeDatabaseUrl, runtimeDatabaseUrlErrorMessage } from "./env";
 
@@ -39,6 +40,10 @@ function getPool() {
       ? { ssl: { rejectUnauthorized: false } }
       : {}),
   });
+
+  if (process.env.VERCEL === "1") {
+    attachDatabasePool(pool);
+  }
 
   globalForPrisma.pgPool = pool;
 

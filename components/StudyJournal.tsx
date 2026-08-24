@@ -1,0 +1,105 @@
+import { signOut } from "@/auth";
+import StudyCalendar from "@/components/StudyCalendar";
+import StudyCharts from "@/components/StudyCharts";
+import StudyEntryPanel from "@/components/StudyEntryPanel";
+import ThemeSelector from "@/components/ThemeSelector";
+import WeeklyStudyCelebration from "@/components/WeeklyStudyCelebration";
+import type {
+  StudyCalendarData,
+  StudyChartData,
+} from "@/lib/study-session-data";
+import { LogOut, Sprout, Trash2 } from "lucide-react";
+import Link from "next/link";
+
+export type PreviousJournalSession = {
+  subject: string;
+  hours: number;
+  date: string;
+};
+
+export default function StudyJournal({
+  previousSession,
+  initialChartData,
+  initialCalendarData,
+  todayLabel,
+  todayDateKey,
+  referenceDate,
+  totalHours,
+}: {
+  previousSession?: PreviousJournalSession;
+  initialChartData: StudyChartData;
+  initialCalendarData: StudyCalendarData;
+  todayLabel: string;
+  todayDateKey: string;
+  referenceDate: string;
+  totalHours: number;
+}) {
+  return (
+    <div className="journal-desk">
+      <main className="study-journal">
+        <section className="journal-page journal-page--left" aria-label="Study entry page">
+          <header className="journal-brand">
+            <Sprout aria-hidden="true" />
+            <div>
+              <Link href="/dashboard">Track My Studying</Link>
+              <p>Personal Study Journal</p>
+            </div>
+          </header>
+
+          <WeeklyStudyCelebration sessions={initialChartData.points} />
+
+          <StudyEntryPanel
+            todayLabel={todayLabel}
+            todayDateKey={todayDateKey}
+            previousSession={previousSession}
+          />
+        </section>
+
+        <section className="journal-page journal-page--right" aria-label="Study analytics page">
+          <header className="journal-right-header">
+            <nav className="journal-utilities" aria-label="Journal utilities">
+              <ThemeSelector />
+              <Link href="/remove-hours" className="journal-utility">
+                <Trash2 aria-hidden="true" />
+                Remove Hours
+              </Link>
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut({ redirectTo: "/" });
+                }}
+              >
+                <button type="submit" className="journal-utility">
+                  <LogOut aria-hidden="true" />
+                  Sign Out
+                </button>
+              </form>
+            </nav>
+
+            <div className="journal-total" aria-label={`${totalHours.toFixed(1)} total hours`}>
+              <strong>{totalHours.toFixed(1)}</strong>
+              <span>Total Hours</span>
+            </div>
+          </header>
+
+          <StudyCharts
+            key={`charts-${totalHours}`}
+            initialData={initialChartData}
+          />
+          <StudyCalendar
+            key={`calendar-${totalHours}`}
+            initialData={initialCalendarData}
+            fallbackDate={referenceDate}
+          />
+
+          <footer className="journal-colophon">
+            <span>Notes become progress.</span>
+            <a href="https://aryamaan-dash.vercel.app/" target="_blank" rel="noreferrer">
+              Made by Aryamaan Dash
+            </a>
+          </footer>
+        </section>
+      </main>
+    </div>
+  );
+}

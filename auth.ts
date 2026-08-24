@@ -12,6 +12,25 @@ function getCredentialValue(value: unknown) {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
+  callbacks: {
+    ...authConfig.callbacks,
+    jwt({ token, user }) {
+      if (user?.id) {
+        token.id = user.id;
+      }
+
+      return token;
+    },
+    session({ session, token }) {
+      const userId = typeof token.id === "string" ? token.id : token.sub;
+
+      if (session.user && userId) {
+        session.user.id = userId;
+      }
+
+      return session;
+    },
+  },
   providers: [
     Credentials({
       credentials: {

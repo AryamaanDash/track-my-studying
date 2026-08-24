@@ -1,0 +1,285 @@
+{
+  "version": 1,
+  "project": {
+    "name": "track-my-studying",
+    "productType": null,
+    "stack": [
+      "nextjs",
+      "react",
+      "tailwind-v4"
+    ]
+  },
+  "sources": {
+    "tokens": [
+      "app/globals.css"
+    ],
+    "components": [],
+    "assets": [],
+    "instructions": [
+      "AGENTS.md",
+      "CLAUDE.md"
+    ]
+  },
+  "design": {
+    "colorMode": "light",
+    "colors": {
+      "--paper-secondary": {
+        "value": "#31302b",
+        "source": "app/globals.css"
+      },
+      "--muted-ink": {
+        "value": "#aaa397",
+        "source": "app/globals.css"
+      },
+      "--background": {
+        "value": "var(--desk-bg)",
+        "source": "app/globals.css"
+      },
+      "--foreground": {
+        "value": "var(--ink)",
+        "source": "app/globals.css"
+      },
+      "--surface-muted": {
+        "value": "#3b3a34",
+        "source": "app/globals.css"
+      },
+      "--border": {
+        "value": "var(--rule)",
+        "source": "app/globals.css"
+      },
+      "--muted": {
+        "value": "var(--muted-ink)",
+        "source": "app/globals.css"
+      },
+      "--muted-strong": {
+        "value": "#d4cdbc",
+        "source": "app/globals.css"
+      },
+      "--accent": {
+        "value": "#7ba09d",
+        "source": "app/globals.css"
+      },
+      "--accent-hover": {
+        "value": "#91b3b0",
+        "source": "app/globals.css"
+      },
+      "--accent-soft": {
+        "value": "#293b38",
+        "source": "app/globals.css"
+      },
+      "--accent-foreground": {
+        "value": "#171b1b",
+        "source": "app/globals.css"
+      },
+      "--button-foreground": {
+        "value": "#272722",
+        "source": "app/globals.css"
+      },
+      "--danger-border": {
+        "value": "#75453f",
+        "source": "app/globals.css"
+      },
+      "--danger-foreground": {
+        "value": "#f1b3ab",
+        "source": "app/globals.css"
+      },
+      "--success-border": {
+        "value": "#536750",
+        "source": "app/globals.css"
+      },
+      "--success-foreground": {
+        "value": "#bed0b6",
+        "source": "app/globals.css"
+      },
+      "--chart-axis": {
+        "value": "#8e897f",
+        "source": "app/globals.css"
+      },
+      "--chart-grid": {
+        "value": "rgba(211, 202, 186, 0.12)",
+        "source": "app/globals.css"
+      },
+      "--chart-cursor": {
+        "value": "rgba(125, 163, 174, 0.08)",
+        "source": "app/globals.css"
+      },
+      "--chart-tooltip-bg": {
+        "value": "#34332e",
+        "source": "app/globals.css"
+      },
+      "--chart-tooltip-border": {
+        "value": "#5f5b51",
+        "source": "app/globals.css"
+      },
+      "--chart-tooltip-fg": {
+        "value": "#eee7d8",
+        "source": "app/globals.css"
+      },
+      "--input-color-scheme": {
+        "value": "dark",
+        "source": "app/globals.css"
+      },
+      "--color-background": {
+        "value": "var(--background)",
+        "source": "app/globals.css"
+      },
+      "--color-foreground": {
+        "value": "var(--foreground)",
+        "source": "app/globals.css"
+      },
+      "--color-surface": {
+        "value": "var(--surface)",
+        "source": "app/globals.css"
+      },
+      "--color-surface-strong": {
+        "value": "var(--surface-strong)",
+        "source": "app/globals.css"
+      },
+      "--color-surface-muted": {
+        "value": "var(--surface-muted)",
+        "source": "app/globals.css"
+      },
+      "--color-border": {
+        "value": "var(--border)",
+        "source": "app/globals.css"
+      },
+      "--color-muted": {
+        "value": "var(--muted)",
+        "source": "app/globals.css"
+      },
+      "--color-muted-strong": {
+        "value": "var(--muted-strong)",
+        "source": "app/globals.css"
+      },
+      "--color-accent": {
+        "value": "var(--accent)",
+        "source": "app/globals.css"
+      },
+      "--color-accent-hover": {
+        "value": "var(--accent-hover)",
+        "source": "app/globals.css"
+      },
+      "--color-accent-soft": {
+        "value": "var(--accent-soft)",
+        "source": "app/globals.css"
+      },
+      "--color-accent-foreground": {
+        "value": "var(--accent-foreground)",
+        "source": "app/globals.css"
+      },
+      "--color-button": {
+        "value": "var(--button)",
+        "source": "app/globals.css"
+      },
+      "--color-button-hover": {
+        "value": "var(--button-hover)",
+        "source": "app/globals.css"
+      },
+      "--color-button-foreground": {
+        "value": "var(--button-foreground)",
+        "source": "app/globals.css"
+      },
+      "--color-danger": {
+        "value": "var(--danger)",
+        "source": "app/globals.css"
+      },
+      "--color-danger-soft": {
+        "value": "var(--danger-soft)",
+        "source": "app/globals.css"
+      },
+      "--color-danger-border": {
+        "value": "var(--danger-border)",
+        "source": "app/globals.css"
+      },
+      "--color-danger-foreground": {
+        "value": "var(--danger-foreground)",
+        "source": "app/globals.css"
+      },
+      "--color-success-soft": {
+        "value": "var(--success-soft)",
+        "source": "app/globals.css"
+      },
+      "--color-success-border": {
+        "value": "var(--success-border)",
+        "source": "app/globals.css"
+      },
+      "--color-success-foreground": {
+        "value": "var(--success-foreground)",
+        "source": "app/globals.css"
+      }
+    },
+    "typography": {
+      "--font-sans": {
+        "value": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "source": "app/globals.css"
+      },
+      "--font-serif": {
+        "value": "var(--journal-serif)",
+        "source": "app/globals.css"
+      },
+      "--font-mono": {
+        "value": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", Menlo, monospace",
+        "source": "app/globals.css"
+      }
+    },
+    "spacing": {},
+    "radius": {},
+    "shadows": {
+      "--journal-shadow": {
+        "value": "0 30px 70px rgba(0, 0, 0, 0.42), 0 5px 15px rgba(0, 0, 0, 0.36)",
+        "source": "app/globals.css"
+      },
+      "--annotation-shadow": {
+        "value": "0 8px 22px rgba(0, 0, 0, 0.3)",
+        "source": "app/globals.css"
+      }
+    },
+    "motion": {},
+    "density": "unknown"
+  },
+  "components": {
+    "installed": [],
+    "preferredPrimitives": [],
+    "patterns": []
+  },
+  "constraints": {
+    "must": [],
+    "avoid": []
+  },
+  "decisions": [
+    "The authenticated dashboard uses a restrained open-study-journal layout: a spacious entry page on the left, a denser analytics and calendar page on the right, a warm paper palette in light mode, and muted charcoal journal paper in dark mode.",
+    "The public homepage presents the product as the closed cover of the same study journal, with Log in and Sign up access repeated in both the cover and the top navigation.",
+    "Authentication screens are presented as a single cream inside-cover journal page, with the dark cloth cover peeking around the page, ruled form fields, handwritten annotations, and a consistent route back to the journal cover."
+  ],
+  "evidence": [
+    {
+      "fact": "design.colorMode:light",
+      "source": "app/globals.css"
+    },
+    {
+      "fact": "design.tokens",
+      "source": "app/globals.css"
+    },
+    {
+      "fact": "project.instructions",
+      "source": "AGENTS.md"
+    },
+    {
+      "fact": "project.instructions",
+      "source": "CLAUDE.md"
+    },
+    {
+      "fact": "project.stack:nextjs",
+      "source": "package.json"
+    },
+    {
+      "fact": "project.stack:react",
+      "source": "package.json"
+    },
+    {
+      "fact": "project.stack:tailwind-v4",
+      "source": "package.json"
+    }
+  ],
+  "generatedAt": "2026-08-24T06:16:17.968Z"
+}

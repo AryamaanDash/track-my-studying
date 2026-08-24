@@ -1,23 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-
-type StudyCalendarSession = {
-  id: string;
-  subject: string;
-  hours: number;
-  date: string;
-};
+import { getSubjectColor } from "@/lib/study-colors";
+import type { StudyCalendarData } from "@/lib/study-session-data";
 
 type DaySummary = {
   date: Date;
@@ -33,67 +19,52 @@ const monthFormatter = new Intl.DateTimeFormat("en-US", {
 
 const selectedDateFormatter = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
+  month: "short",
+  day: "numeric",
+});
+
+const accessibleDateFormatter = new Intl.DateTimeFormat("en-US", {
+  weekday: "long",
   month: "long",
   day: "numeric",
   year: "numeric",
 });
 
-const weekdayFormatter = new Intl.DateTimeFormat("en-US", {
-  weekday: "short",
-});
-
-const dayNames = Array.from({ length: 7 }, (_, dayIndex) =>
-  weekdayFormatter.format(new Date(2024, 0, dayIndex + 7))
-);
+const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function getDateKey(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-
   return `${year}-${month}-${day}`;
-}
-
-function getSubjectColor(subject: string) {
-  const normalizedSubject = subject.trim().toLowerCase();
-  let hash = 0;
-
-  for (let index = 0; index < normalizedSubject.length; index += 1) {
-    hash = (hash * 31 + normalizedSubject.charCodeAt(index)) >>> 0;
-  }
-
-  const hue = hash % 360;
-  const saturation = 62 + (hash % 14);
-  const lightness = 42 + (hash % 10);
-
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 function getMonthStart(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
-function getDaysInMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+function getMonthKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
 }
 
-function parseSessionDateKey(session: StudyCalendarSession) {
-  const sessionDate = new Date(session.date);
+function getInitialMonth(month: string, fallbackDate: string) {
+  const initialMonth = new Date(`${month}-01T00:00:00`);
+  if (!Number.isNaN(initialMonth.getTime())) return initialMonth;
 
-  if (Number.isNaN(sessionDate.getTime())) return null;
-
-  return {
-    date: sessionDate,
-    dateKey: getDateKey(sessionDate),
-  };
+  const fallback = new Date(fallbackDate);
+  return getMonthStart(Number.isNaN(fallback.getTime()) ? new Date() : fallback);
 }
 
-function getInitialDate(sessions: StudyCalendarSession[], fallbackDate: string) {
-  const initialDate = sessions[0] ? new Date(sessions[0].date) : new Date(fallbackDate);
+function getInitialDateKey(month: string, fallbackDate: string) {
+  const fallback = new Date(fallbackDate);
 
-  if (!Number.isNaN(initialDate.getTime())) return initialDate;
+  if (!Number.isNaN(fallback.getTime()) && getMonthKey(fallback) === month) {
+    return getDateKey(fallback);
+  }
 
-  return new Date(fallbackDate);
+  return `${month}-01`;
 }
 
 function formatHours(hours: number) {
@@ -101,232 +72,249 @@ function formatHours(hours: number) {
 }
 
 export default function StudyCalendar({
-  sessions,
+  initialData,
   fallbackDate,
 }: {
-  sessions: StudyCalendarSession[];
+  initialData: StudyCalendarData;
   fallbackDate: string;
 }) {
-  const initialDate = getInitialDate(sessions, fallbackDate);
-  const [monthCursor, setMonthCursor] = useState(() => getMonthStart(initialDate));
-  const [selectedDateKey, setSelectedDateKey] = useState(() => getDateKey(initialDate));
+  const [monthCursor, setMonthCursor] = useState(() =>
+    getInitialMonth(initialData.month, fallbackDate)
+  );
+  const [selectedDateKey, setSelectedDateKey] = useState(() =>
+    getInitialDateKey(initialData.month, fallbackDate)
+  );
+  const [points, setPoints] = useState(initialData.points);
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const cachedMonths = useRef(
+    new Map<string, StudyCalendarData["points"]>([
+      [initialData.month, initialData.points],
+    ])
+  );
+  const activeRequest = useRef<AbortController | null>(null);
 
-  const summariesByDate = useMemo(() => {
-    return sessions.reduce<Record<string, DaySummary>>((acc, session) => {
-      const parsedDate = parseSessionDateKey(session);
+  useEffect(
+    () => () => {
+      activeRequest.current?.abort();
+    },
+    []
+  );
 
-      if (!parsedDate) return acc;
+  const summariesByDate = useMemo(
+    () =>
+      points.reduce<Record<string, DaySummary>>((summaries, point) => {
+        const date = new Date(`${point.date}T00:00:00`);
+        if (Number.isNaN(date.getTime())) return summaries;
 
-      acc[parsedDate.dateKey] ??= {
-        date: parsedDate.date,
-        dateKey: parsedDate.dateKey,
-        totalHours: 0,
-        subjectTotals: {},
-      };
-
-      acc[parsedDate.dateKey].totalHours += session.hours;
-      acc[parsedDate.dateKey].subjectTotals[session.subject] =
-        (acc[parsedDate.dateKey].subjectTotals[session.subject] || 0) + session.hours;
-
-      return acc;
-    }, {});
-  }, [sessions]);
-
-  const calendarDays = useMemo(() => {
-    const daysInMonth = getDaysInMonth(monthCursor);
-    const firstWeekday = monthCursor.getDay();
-
-    return [
-      ...Array.from({ length: firstWeekday }, () => null),
-      ...Array.from({ length: daysInMonth }, (_, dayIndex) => {
-        const date = new Date(
-          monthCursor.getFullYear(),
-          monthCursor.getMonth(),
-          dayIndex + 1
-        );
-        const dateKey = getDateKey(date);
-
-        return {
+        const dateKey = point.date;
+        summaries[dateKey] ??= {
           date,
           dateKey,
-          dayNumber: dayIndex + 1,
-          summary: summariesByDate[dateKey],
+          totalHours: 0,
+          subjectTotals: {},
         };
-      }),
-    ];
+        summaries[dateKey].totalHours += point.hours;
+        summaries[dateKey].subjectTotals[point.subject] =
+          (summaries[dateKey].subjectTotals[point.subject] || 0) + point.hours;
+        return summaries;
+      }, {}),
+    [points]
+  );
+
+  const calendarDays = useMemo(() => {
+    const gridStart = new Date(monthCursor);
+    gridStart.setDate(gridStart.getDate() - gridStart.getDay());
+
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = new Date(gridStart);
+      date.setDate(gridStart.getDate() + index);
+      const dateKey = getDateKey(date);
+
+      return {
+        date,
+        dateKey,
+        dayNumber: date.getDate(),
+        isCurrentMonth: date.getMonth() === monthCursor.getMonth(),
+        summary: summariesByDate[dateKey],
+      };
+    });
   }, [monthCursor, summariesByDate]);
 
   const selectedSummary = summariesByDate[selectedDateKey];
   const selectedDate = selectedSummary?.date ?? new Date(`${selectedDateKey}T00:00:00`);
-  const selectedLabel = Number.isNaN(selectedDate.getTime())
-    ? selectedDateKey
-    : selectedDateFormatter.format(selectedDate);
-
   const selectedDayData = Object.entries(selectedSummary?.subjectTotals ?? {})
-    .map(([subject, hours]) => ({
-      subject,
-      hours,
-      color: getSubjectColor(subject),
-    }))
+    .map(([subject, hours]) => ({ subject, hours, color: getSubjectColor(subject) }))
     .sort((a, b) => b.hours - a.hours || a.subject.localeCompare(b.subject));
 
-  const chartHeight = Math.max(240, selectedDayData.length * 48 + 96);
+  function loadMonth(nextMonth: Date, nextSelectedDateKey: string) {
+    const month = getMonthKey(nextMonth);
+    activeRequest.current?.abort();
+    setMonthCursor(nextMonth);
+    setSelectedDateKey(nextSelectedDateKey);
+    setError("");
 
-  function goToPreviousMonth() {
-    setMonthCursor(
-      (currentMonth) => new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
-    );
+    const cached = cachedMonths.current.get(month);
+    if (cached) {
+      setPoints(cached);
+      return;
+    }
+
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    setPoints([]);
+
+    startTransition(async () => {
+      try {
+        const response = await fetch(
+          `/api/study-sessions/calendar?month=${encodeURIComponent(month)}`,
+          { cache: "no-store", signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error("Unable to load study calendar.");
+        }
+
+        const data = (await response.json()) as StudyCalendarData;
+        cachedMonths.current.set(month, data.points);
+
+        if (!controller.signal.aborted) {
+          setPoints(data.points);
+        }
+      } catch (loadError) {
+        if (loadError instanceof Error && loadError.name === "AbortError") return;
+        setError("Unable to load this month. Please try again.");
+      } finally {
+        if (activeRequest.current === controller) {
+          activeRequest.current = null;
+        }
+      }
+    });
   }
 
-  function goToNextMonth() {
-    setMonthCursor(
-      (currentMonth) => new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+  function changeMonth(offset: number) {
+    const nextMonth = new Date(
+      monthCursor.getFullYear(),
+      monthCursor.getMonth() + offset,
+      1
     );
+    loadMonth(nextMonth, getDateKey(nextMonth));
+  }
+
+  function selectDay(date: Date, dateKey: string, isCurrentMonth: boolean) {
+    if (isCurrentMonth) {
+      setSelectedDateKey(dateKey);
+      return;
+    }
+
+    loadMonth(getMonthStart(date), dateKey);
   }
 
   return (
-    <section className="mt-20 border-t border-border pt-5">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-wider text-muted">History</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">Study calendar</h2>
-        </div>
-
-        <div className="flex items-center gap-2">
+    <section
+      aria-busy={isPending}
+      className="journal-calendar"
+      aria-labelledby="calendar-heading"
+    >
+      <div className="calendar-heading-row">
+        <h2 id="calendar-heading">{monthFormatter.format(monthCursor)}</h2>
+        <div className="calendar-navigation">
           <button
+            type="button"
             aria-label="Previous month"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted transition-colors hover:border-foreground hover:text-foreground"
-            onClick={goToPreviousMonth}
-            type="button"
+            onClick={() => changeMonth(-1)}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft aria-hidden="true" />
           </button>
-          <div className="min-w-44 text-center text-sm font-semibold text-foreground">
-            {monthFormatter.format(monthCursor)}
-          </div>
-          <button
-            aria-label="Next month"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted transition-colors hover:border-foreground hover:text-foreground"
-            onClick={goToNextMonth}
-            type="button"
-          >
-            <ChevronRight className="h-4 w-4" />
+          <button type="button" aria-label="Next month" onClick={() => changeMonth(1)}>
+            <ChevronRight aria-hidden="true" />
           </button>
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wider text-muted">
+      <div className="calendar-layout">
+        <div className="calendar-grid-wrap">
+          <div className="calendar-weekdays" aria-hidden="true">
             {dayNames.map((dayName) => (
-              <div key={dayName}>{dayName}</div>
+              <span key={dayName}>{dayName}</span>
             ))}
           </div>
 
-          <div className="mt-2 grid grid-cols-7 gap-2">
-            {calendarDays.map((day, index) => {
-              if (!day) {
-                return <div key={`blank-${index}`} className="h-16 md:h-20" />;
-              }
-
+          <div className="calendar-grid">
+            {calendarDays.map((day) => {
               const isSelected = day.dateKey === selectedDateKey;
               const totalHours = day.summary?.totalHours ?? 0;
-              const hasSessions = totalHours > 0;
+              const subjectMarkers = Object.keys(day.summary?.subjectTotals ?? {})
+                .sort((a, b) =>
+                  (day.summary?.subjectTotals[b] ?? 0) -
+                  (day.summary?.subjectTotals[a] ?? 0)
+                )
+                .slice(0, 3);
 
               return (
                 <button
                   key={day.dateKey}
-                  aria-label={`${selectedDateFormatter.format(day.date)}: ${formatHours(
-                    totalHours
-                  )} studied`}
-                  aria-pressed={isSelected}
-                  className={`flex h-16 flex-col items-start justify-between border p-2 text-left transition-colors md:h-20 ${
-                    isSelected
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border bg-transparent text-foreground hover:border-foreground"
-                  }`}
-                  onClick={() => setSelectedDateKey(day.dateKey)}
                   type="button"
+                  aria-label={`${accessibleDateFormatter.format(day.date)}: ${
+                    totalHours > 0 ? formatHours(totalHours) : "no study time"
+                  }`}
+                  aria-pressed={isSelected}
+                  className={`calendar-day${isSelected ? " is-selected" : ""}${
+                    day.isCurrentMonth ? "" : " is-adjacent"
+                  }`}
+                  onClick={() => selectDay(day.date, day.dateKey, day.isCurrentMonth)}
                 >
-                  <span className="text-sm font-semibold">{day.dayNumber}</span>
-                  <span
-                    className={`text-[11px] leading-tight ${
-                      isSelected ? "text-background/70" : hasSessions ? "text-foreground" : "text-muted"
-                    }`}
-                  >
-                    {hasSessions ? formatHours(totalHours) : "0.0 hrs"}
-                  </span>
+                  <span className="calendar-day-number">{day.dayNumber}</span>
+                  {totalHours > 0 ? (
+                    <span className="calendar-day-study">
+                      <span className="calendar-hours">{totalHours.toFixed(1)}h</span>
+                      <span className="calendar-markers" aria-hidden="true">
+                        {subjectMarkers.map((subject) => (
+                          <i
+                            key={subject}
+                            style={{ backgroundColor: getSubjectColor(subject) }}
+                          />
+                        ))}
+                      </span>
+                    </span>
+                  ) : null}
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className="border-t border-border pt-4 xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
-          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">{selectedLabel}</h3>
-              <p className="text-xs uppercase tracking-wider text-muted">Daily subjects</p>
-            </div>
-            <span className="text-sm font-semibold text-foreground">
-              {formatHours(selectedSummary?.totalHours ?? 0)}
-            </span>
-          </div>
+        <aside className="selected-day-note" aria-live="polite">
+          <time dateTime={selectedDateKey}>
+            {Number.isNaN(selectedDate.getTime())
+              ? selectedDateKey
+              : selectedDateFormatter.format(selectedDate)}
+          </time>
+          <span className="selected-day-rule" aria-hidden="true" />
 
-          {selectedDayData.length > 0 ? (
-            <div style={{ height: chartHeight }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={selectedDayData}
-                  layout="vertical"
-                  margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
-                >
-                  <XAxis
-                    axisLine={false}
-                    fontSize={12}
-                    stroke="var(--chart-axis)"
-                    tickLine={false}
-                    type="number"
-                  />
-                  <YAxis
-                    axisLine={false}
-                    dataKey="subject"
-                    fontSize={12}
-                    stroke="var(--chart-axis)"
-                    tickFormatter={(subject) =>
-                      String(subject).length > 13
-                        ? `${String(subject).slice(0, 13)}...`
-                        : String(subject)
-                    }
-                    tickLine={false}
-                    type="category"
-                    width={96}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--chart-tooltip-bg)",
-                      border: "1px solid var(--chart-tooltip-border)",
-                      borderRadius: "8px",
-                      color: "var(--chart-tooltip-fg)",
-                    }}
-                    cursor={{ fill: "var(--chart-cursor)" }}
-                    formatter={(value) => [`${Number(value).toFixed(1)} hrs`, "Hours"]}
-                    labelFormatter={(subject) => String(subject)}
-                  />
-                  <Bar dataKey="hours" radius={[0, 6, 6, 0]}>
-                    {selectedDayData.map((entry) => (
-                      <Cell key={entry.subject} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+          {isPending || error ? (
+            <p className="selected-day-empty">
+              {isPending ? "Loading this month…" : error}
+            </p>
+          ) : selectedDayData.length > 0 ? (
+            <>
+              <ul>
+                {selectedDayData.map((entry) => (
+                  <li key={entry.subject}>
+                    <i style={{ backgroundColor: entry.color }} aria-hidden="true" />
+                    <span>{entry.subject}</span>
+                    <strong>{entry.hours.toFixed(1)} hrs</strong>
+                  </li>
+                ))}
+              </ul>
+              <p className="selected-day-total">
+                {formatHours(selectedSummary?.totalHours ?? 0)} total
+              </p>
+            </>
           ) : (
-            <div className="flex min-h-60 items-center justify-center border-y border-dashed border-border p-6 text-center text-sm text-muted">
-              No studying was logged for this date.
-            </div>
+            <p className="selected-day-empty">No studying was logged on this page yet.</p>
           )}
-        </div>
+        </aside>
       </div>
     </section>
   );

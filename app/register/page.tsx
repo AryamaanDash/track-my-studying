@@ -1,11 +1,10 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { UserPlus, Mail, Lock } from "lucide-react";
+import { Lock, Mail, UserPlus } from "lucide-react";
 import { auth } from "@/auth";
-import ThemeSelector from "@/components/ThemeSelector";
+import JournalAuthPage from "@/components/JournalAuthPage";
 import { prisma } from "@/lib/prisma";
 
 const registerErrorMessages: Record<string, string> = {
@@ -100,64 +99,65 @@ export default async function RegisterPage({
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background p-4 text-foreground">
-      <div className="absolute right-4 top-4">
-        <ThemeSelector />
-      </div>
-
-      <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-8 shadow-2xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight mb-2">
-            Create <span className="text-accent">Account</span>
-          </h1>
-          <p className="text-muted text-sm">Sign up to start tracking your hours.</p>
-        </div>
-
+    <JournalAuthPage
+      activePage="register"
+      title="Begin your journal."
+      description="Create an account and give every focused hour a place to become visible progress."
+      annotation="A fresh first page"
+      alternatePrompt="Already keep a journal here?"
+      alternateHref="/login"
+      alternateLabel="Log in"
+    >
+      <div className="journal-auth-messages">
         {errorMessage ? (
-          <p className="mb-6 rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger-foreground">
+          <p className="journal-auth-message journal-auth-message--error" role="alert">
             {errorMessage}
           </p>
         ) : null}
-
-        <form action={registerUser} className="space-y-4">
-          <div className="relative">
-            <Mail className="absolute left-4 top-3.5 w-5 h-5 text-muted" />
-            <input
-              name="email"
-              type="email"
-              placeholder="Email address"
-              autoComplete="email"
-              required
-              className="w-full rounded-xl border border-border bg-background py-3 pl-12 pr-4 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-          
-          <div className="relative">
-            <Lock className="absolute left-4 top-3.5 w-5 h-5 text-muted" />
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              autoComplete="new-password"
-              minLength={8}
-              required
-              className="w-full rounded-xl border border-border bg-background py-3 pl-12 pr-4 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-
-          <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 font-bold text-accent-foreground shadow-lg transition-colors hover:bg-accent-hover">
-            <UserPlus className="w-5 h-5" />
-            Register
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-muted">
-          Already have an account?{" "}
-          <Link href="/login" className="text-accent hover:text-accent-hover">
-            Sign in
-          </Link>
-        </p>
       </div>
-    </div>
+
+      <form action={registerUser} className="journal-auth-form">
+        <div className="journal-auth-field">
+          <label htmlFor="register-email">
+            <Mail aria-hidden="true" />
+            Email address
+          </label>
+          <input
+            id="register-email"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            required
+          />
+        </div>
+
+        <div className="journal-auth-field">
+          <label htmlFor="register-password">
+            <Lock aria-hidden="true" />
+            Password
+          </label>
+          <input
+            id="register-password"
+            name="password"
+            type="password"
+            placeholder="Choose a password"
+            autoComplete="new-password"
+            minLength={8}
+            maxLength={72}
+            aria-describedby="register-password-hint"
+            required
+          />
+          <span id="register-password-hint" className="journal-auth-hint">
+            Use 8–72 characters.
+          </span>
+        </div>
+
+        <button type="submit" className="journal-auth-submit">
+          <UserPlus aria-hidden="true" />
+          Create my journal
+        </button>
+      </form>
+    </JournalAuthPage>
   );
 }

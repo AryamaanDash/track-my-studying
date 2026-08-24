@@ -10,28 +10,19 @@ function getFormString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-async function getCurrentUserOrThrow() {
+async function getCurrentUserIdOrThrow() {
   const session = await auth();
-  const email = session?.user?.email?.trim().toLowerCase();
+  const userId = session?.user?.id;
 
-  if (!email) {
+  if (!userId) {
     throw new Error("Not authorized");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true },
-  });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  return user;
+  return userId;
 }
 
 export async function addStudySession(formData: FormData) {
-  const user = await getCurrentUserOrThrow();
+  const userId = await getCurrentUserIdOrThrow();
   const subject = getFormString(formData, "subject");
   const hoursValue = getFormString(formData, "hours");
   const dateValue = getFormString(formData, "date");
@@ -60,7 +51,7 @@ export async function addStudySession(formData: FormData) {
       subject,
       hours,
       date,
-      userId: user.id,
+      userId,
     },
   });
 
@@ -68,7 +59,7 @@ export async function addStudySession(formData: FormData) {
 }
 
 export async function deleteSession(id: string) {
-  const user = await getCurrentUserOrThrow();
+  const userId = await getCurrentUserIdOrThrow();
   const sessionId = id.trim();
 
   if (!sessionId) {
@@ -78,7 +69,7 @@ export async function deleteSession(id: string) {
   const { count } = await prisma.studySession.deleteMany({
     where: {
       id: sessionId,
-      userId: user.id,
+      userId,
     },
   });
 

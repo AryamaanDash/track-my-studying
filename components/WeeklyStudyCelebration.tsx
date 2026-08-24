@@ -2,10 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Sparkles, TrendingUp } from "lucide-react";
-import styles from "./WeeklyStudyCelebration.module.css";
 
 type WeeklyStudySession = {
-  id: string;
   hours: number;
   date: string;
 };
@@ -49,7 +47,11 @@ function sumHoursBetween(sessions: WeeklyStudySession[], start: Date, end: Date)
   const endTime = end.getTime();
 
   return sessions.reduce((total, session) => {
-    const sessionTime = new Date(session.date).getTime();
+    const sessionTime = new Date(
+      /^\d{4}-\d{2}-\d{2}$/.test(session.date)
+        ? `${session.date}T00:00:00`
+        : session.date
+    ).getTime();
 
     if (Number.isNaN(sessionTime) || sessionTime < startTime || sessionTime >= endTime) {
       return total;
@@ -112,32 +114,16 @@ export default function WeeklyStudyCelebration({
     : `Congrats! You have studied for ${currentWeekHours} hours this week!`;
 
   return (
-    <section
-      aria-live="polite"
-      className={`mx-auto mb-8 max-w-7xl overflow-hidden rounded-3xl border border-success-border bg-success-soft p-5 text-success-foreground shadow-2xl ${styles.card}`}
-    >
-      <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground shadow-lg">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-muted-strong">
-              Sunday check-in
-            </p>
-            <p className="mt-1 text-lg font-semibold leading-snug text-foreground">
-              {message}
-            </p>
-          </div>
-        </div>
-
-        <div
-          className={`flex w-fit items-center gap-2 rounded-full border border-success-border bg-background px-4 py-2 text-sm font-semibold text-accent ${styles.metricPill}`}
-        >
-          <TrendingUp className="h-4 w-4" />
-          {currentWeekHours} hrs
-        </div>
-      </div>
+    <section aria-live="polite" className="journal-weekly-note">
+      <Sparkles aria-hidden="true" />
+      <p>
+        <span>Sunday check-in</span>
+        {message}
+      </p>
+      <strong>
+        <TrendingUp aria-hidden="true" />
+        {currentWeekHours} hrs
+      </strong>
     </section>
   );
 }

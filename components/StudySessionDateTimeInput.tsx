@@ -12,13 +12,14 @@ function formatDateTimeLocal(date: Date) {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-export default function StudySessionDateTimeInput() {
+export default function StudySessionDateTimeInput({ id }: { id?: string }) {
   const [dateTime, setDateTime] = useState(() =>
     formatDateTimeLocal(new Date())
   );
 
   return (
     <input
+      id={id}
       name="date"
       type="datetime-local"
       required
@@ -26,7 +27,7 @@ export default function StudySessionDateTimeInput() {
       onChange={(event) => setDateTime(event.target.value)}
       step="60"
       suppressHydrationWarning
-      className="field [color-scheme:var(--input-color-scheme)]"
+      className="journal-input journal-date-input journal-hand [color-scheme:var(--input-color-scheme)]"
     />
   );
 }

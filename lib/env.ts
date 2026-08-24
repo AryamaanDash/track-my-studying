@@ -1,10 +1,10 @@
 type EnvSource = NodeJS.ProcessEnv;
 
 const runtimeDatabaseUrlKeys = [
-  "PRISMA_DATABASE_URL",
   "POSTGRES_PRISMA_URL",
-  "DATABASE_URL",
+  "PRISMA_DATABASE_URL",
   "POSTGRES_URL",
+  "DATABASE_URL",
 ] as const;
 
 const migrationDatabaseUrlKeys = [

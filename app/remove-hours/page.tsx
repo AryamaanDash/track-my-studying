@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { ArrowLeft, CalendarClock, LogOut, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarClock,
+  ChevronRight,
+  LogOut,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 import { auth, signOut } from "@/auth";
 import RemoveStudySessionButton from "@/components/RemoveStudySessionButton";
 import ThemeSelector from "@/components/ThemeSelector";
@@ -20,38 +27,62 @@ const sessionDateFormatter = new Intl.DateTimeFormat("en-US", {
   minute: "2-digit",
 });
 
-export default async function RemoveHoursPage() {
+const pageSize = 50;
+
+function getSearchParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function RemoveHoursPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    cursor?: string | string[];
+    page?: string | string[];
+  }>;
+}) {
   await connection();
 
   const session = await auth();
-  const email = session?.user?.email?.trim().toLowerCase();
+  const userId = session?.user?.id;
+  const email = session?.user?.email ?? "";
 
-  if (!email) {
+  if (!userId) {
     redirect("/login");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: {
-      email: true,
-      studySessions: {
-        select: {
-          id: true,
-          subject: true,
-          hours: true,
-          date: true,
-        },
-        orderBy: { date: "asc" },
+  const params = await searchParams;
+  const cursor = getSearchParam(params.cursor)?.trim() || undefined;
+  const requestedPage = Number(getSearchParam(params.page) ?? "1");
+  const currentPage =
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+
+  const [sessionCount, totalResult, sessionRows] = await Promise.all([
+    prisma.studySession.count({ where: { userId } }),
+    prisma.studySession.aggregate({
+      where: { userId },
+      _sum: { hours: true },
+    }),
+    prisma.studySession.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        subject: true,
+        hours: true,
+        date: true,
       },
-    },
-  });
+      orderBy: [{ date: "asc" }, { id: "asc" }],
+      take: pageSize + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    }),
+  ]);
 
-  if (!user) redirect("/login");
-
-  const totalHours = user.studySessions.reduce(
-    (sum, studySession) => sum + studySession.hours,
-    0
-  );
+  const hasMore = sessionRows.length > pageSize;
+  const studySessions = hasMore ? sessionRows.slice(0, pageSize) : sessionRows;
+  const nextCursor = hasMore
+    ? studySessions[studySessions.length - 1]?.id
+    : undefined;
+  const totalHours = totalResult._sum.hours ?? 0;
 
   return (
     <div className="min-h-screen bg-background p-6 font-sans text-foreground md:p-10">
@@ -72,7 +103,7 @@ export default async function RemoveHoursPage() {
 
         <div className="flex flex-wrap items-center gap-4 md:gap-6">
           <ThemeSelector />
-          <span className="text-sm text-muted">{user.email}</span>
+          <span className="text-sm text-muted">{email}</span>
           <form
             action={async () => {
               "use server";
@@ -93,7 +124,7 @@ export default async function RemoveHoursPage() {
               Sessions
             </span>
             <p className="mt-2 text-3xl font-bold">
-              {user.studySessions.length}
+              {sessionCount}
             </p>
           </div>
           <div className="rounded-3xl border border-border bg-surface p-5">
@@ -113,9 +144,9 @@ export default async function RemoveHoursPage() {
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-border bg-surface shadow-2xl">
-          {user.studySessions.length > 0 ? (
+          {studySessions.length > 0 ? (
             <ul className="divide-y divide-border">
-              {user.studySessions.map((studySession) => {
+              {studySessions.map((studySession) => {
                 const dateLabel = sessionDateFormatter.format(studySession.date);
 
                 return (
@@ -151,10 +182,47 @@ export default async function RemoveHoursPage() {
           ) : (
             <div className="flex min-h-[300px] flex-col items-center justify-center p-8 text-center text-muted">
               <Trash2 className="mb-4 h-12 w-12 opacity-20" />
-              <p>No logged hours to remove.</p>
+              <p>
+                {sessionCount > 0
+                  ? "No sessions remain on this page."
+                  : "No logged hours to remove."}
+              </p>
             </div>
           )}
         </section>
+
+        {cursor || nextCursor ? (
+          <nav
+            aria-label="Study session pages"
+            className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-4"
+          >
+            <p className="text-sm text-muted">
+              Page {currentPage} · Up to {pageSize} sessions per page
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              {cursor ? (
+                <Link
+                  href="/remove-hours"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface-strong px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface-muted"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  First Page
+                </Link>
+              ) : null}
+              {nextCursor ? (
+                <Link
+                  href={`/remove-hours?cursor=${encodeURIComponent(
+                    nextCursor
+                  )}&page=${currentPage + 1}`}
+                  className="inline-flex items-center gap-2 rounded-xl bg-button px-4 py-2 text-sm font-semibold text-button-foreground transition-colors hover:bg-button-hover"
+                >
+                  Next 50
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              ) : null}
+            </div>
+          </nav>
+        ) : null}
       </main>
     </div>
   );

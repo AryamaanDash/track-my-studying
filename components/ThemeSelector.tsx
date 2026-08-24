@@ -77,38 +77,19 @@ export default function ThemeSelector() {
     window.dispatchEvent(new Event(themeChangeEvent));
   }
 
+  const nextTheme: Theme = selectedTheme === "light" ? "dark" : "light";
+  const ThemeIcon = selectedTheme === "light" ? Sun : Moon;
+
   return (
-    <div
-      aria-label="Color theme"
-      className="flex w-fit items-center rounded-full border border-border p-0.5 text-xs"
-      role="group"
+    <button
+      type="button"
+      className="journal-utility"
+      aria-label={`Switch to ${nextTheme} theme`}
+      title={`Switch to ${nextTheme} theme`}
+      onClick={() => chooseTheme(nextTheme)}
     >
-      <button
-        aria-pressed={selectedTheme === "light"}
-        className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors ${
-          selectedTheme === "light"
-            ? "bg-foreground text-background"
-            : "text-muted hover:text-foreground"
-        }`}
-        onClick={() => chooseTheme("light")}
-        type="button"
-      >
-        <Sun className="h-4 w-4" />
-        <span className="sr-only sm:not-sr-only">Light</span>
-      </button>
-      <button
-        aria-pressed={selectedTheme === "dark"}
-        className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors ${
-          selectedTheme === "dark"
-            ? "bg-foreground text-background"
-            : "text-muted hover:text-foreground"
-        }`}
-        onClick={() => chooseTheme("dark")}
-        type="button"
-      >
-        <Moon className="h-4 w-4" />
-        <span className="sr-only sm:not-sr-only">Dark</span>
-      </button>
-    </div>
+      <ThemeIcon aria-hidden="true" />
+      Theme
+    </button>
   );
 }
