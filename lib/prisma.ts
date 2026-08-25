@@ -37,7 +37,7 @@ function getPool() {
     connectionString,
     max: getPoolMax(),
     ...(shouldUseSsl(connectionString)
-      ? { ssl: { rejectUnauthorized: false } }
+      ? { ssl: true }
       : {}),
   });
 
