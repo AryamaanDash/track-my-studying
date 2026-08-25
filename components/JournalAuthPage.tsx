@@ -33,9 +33,13 @@ export default function JournalAuthPage({
         </Link>
 
         <nav aria-label="Authentication navigation" className="cover-topbar-nav">
-          <Link href="/" className="cover-topbar-link journal-auth-cover-link">
+          <Link
+            href="/"
+            className="cover-topbar-link journal-auth-cover-link"
+            aria-label="Journal cover"
+          >
             <ArrowLeft aria-hidden="true" />
-            Journal cover
+            <span>Journal cover</span>
           </Link>
           <Link
             href="/login"

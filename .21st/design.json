@@ -248,8 +248,8 @@
   },
   "decisions": [
     "The authenticated dashboard uses a restrained open-study-journal layout: a spacious entry page on the left, a denser analytics and calendar page on the right, a warm paper palette in light mode, and muted charcoal journal paper in dark mode.",
-    "The public homepage presents the product as the closed cover of the same study journal, with Log in and Sign up access repeated in both the cover and the top navigation.",
-    "Authentication screens are presented as a single cream inside-cover journal page, with the dark cloth cover peeking around the page, ruled form fields, handwritten annotations, and a consistent route back to the journal cover."
+    "The public homepage keeps the warm desk header visually separate from a dark teal journal cover that fills the remainder of the viewport with only a narrow outer gutter. Its intro pulls back from a centered welcome message and stages the cover content into view; scrolling up returns to the welcome view and scrolling down restores the cover, while reduced-motion users remain in the finished state.",
+    "Authentication screens retain a focused single cream inside-cover form page, but the dark cloth journal and paper now fill the entire area beneath the shared header. Ruled fields, handwritten annotations, and the route back to the journal cover remain consistent."
   ],
   "evidence": [
     {

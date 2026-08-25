@@ -97,5 +97,6 @@ Generated from project sources at 2026-08-24T06:16:17.968Z.
 
 ## Decisions
 
-- None recorded
-
+- The public homepage keeps the warm desk header visually separate from a dark teal journal cover that fills the remainder of the viewport with only a narrow outer gutter.
+- The journal intro uses a restrained camera pullback and staged opacity reveals; scrolling up returns to the welcome view and scrolling down restores the cover, while reduced-motion users remain in the final state.
+- Authentication keeps its focused single-paper form, but the surrounding journal now fills the entire area beneath the shared header.
