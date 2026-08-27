@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { getStudyCalendarData } from "@/lib/study-session-data";
+import { getCachedStudyCalendarData } from "@/lib/study-cache";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   }
 
   const month = new URL(request.url).searchParams.get("month") ?? "";
-  const data = await getStudyCalendarData(userId, month);
+  const data = await getCachedStudyCalendarData(userId, month);
 
   if (!data) {
     return Response.json({ error: "Invalid month" }, { status: 400 });

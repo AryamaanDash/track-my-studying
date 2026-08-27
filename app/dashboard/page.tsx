@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
 import StudyJournal from "@/components/StudyJournal";
-import { prisma } from "@/lib/prisma";
 import {
   getServerElapsedMs,
   logServerPerformance,
@@ -8,10 +7,12 @@ import {
   startServerTimer,
 } from "@/lib/server-performance";
 import {
-  getStudyCalendarData,
-  getStudyChartData,
-  getUtcMonthKey,
-} from "@/lib/study-session-data";
+  getCachedLifetimeStudyHours,
+  getCachedPreviousStudySession,
+  getCachedStudyCalendarData,
+  getCachedStudyChartData,
+} from "@/lib/study-cache";
+import { getUtcMonthKey } from "@/lib/study-session-data";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { after, connection } from "next/server";
@@ -49,30 +50,19 @@ export default async function DashboardPage() {
   const now = new Date();
   const calendarMonth = getUtcMonthKey(now);
   const databaseStarted = startServerTimer();
-  const [previousSession, totalResult, initialChartData, initialCalendarData] =
+  const [previousSession, totalHours, initialChartData, initialCalendarData] =
     await Promise.all([
       measureQuery("latestSessionQueryMs", () =>
-        prisma.studySession.findFirst({
-          where: { userId },
-          select: {
-            subject: true,
-            hours: true,
-            date: true,
-          },
-          orderBy: [{ date: "desc" }, { id: "desc" }],
-        })
+        getCachedPreviousStudySession(userId)
       ),
       measureQuery("lifetimeTotalQueryMs", () =>
-        prisma.studySession.aggregate({
-          where: { userId },
-          _sum: { hours: true },
-        })
+        getCachedLifetimeStudyHours(userId)
       ),
       measureQuery("monthChartQueryMs", () =>
-        getStudyChartData(userId, "month", now)
+        getCachedStudyChartData(userId, "month")
       ),
       measureQuery("calendarQueryMs", () =>
-        getStudyCalendarData(userId, calendarMonth)
+        getCachedStudyCalendarData(userId, calendarMonth)
       ),
     ]);
   timings.databaseQueriesMs = getServerElapsedMs(databaseStarted);
@@ -83,7 +73,6 @@ export default async function DashboardPage() {
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
-  const totalHours = totalResult._sum.hours ?? 0;
   const dataLoadMs = getServerElapsedMs(loadStarted);
 
   if (shouldLogServerPerformance()) {
@@ -99,12 +88,7 @@ export default async function DashboardPage() {
   return (
     <StudyJournal
       previousSession={
-        previousSession
-          ? {
-              ...previousSession,
-              date: previousSession.date.toISOString(),
-            }
-          : undefined
+        previousSession ?? undefined
       }
       initialChartData={initialChartData}
       initialCalendarData={initialCalendarData ?? {

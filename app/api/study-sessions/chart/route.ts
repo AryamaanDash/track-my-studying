@@ -1,8 +1,6 @@
 import { auth } from "@/auth";
-import {
-  getStudyChartData,
-  isStudyTimeframe,
-} from "@/lib/study-session-data";
+import { getCachedStudyChartData } from "@/lib/study-cache";
+import { isStudyTimeframe } from "@/lib/study-session-data";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -18,7 +16,7 @@ export async function GET(request: Request) {
     return Response.json({ error: "Invalid timeframe" }, { status: 400 });
   }
 
-  const data = await getStudyChartData(userId, timeframe);
+  const data = await getCachedStudyChartData(userId, timeframe);
   return Response.json(data, {
     headers: { "Cache-Control": "private, no-store" },
   });

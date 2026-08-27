@@ -13,7 +13,12 @@ import {
 import { auth, signOut } from "@/auth";
 import RemoveStudySessionButton from "@/components/RemoveStudySessionButton";
 import ThemeSelector from "@/components/ThemeSelector";
-import { prisma } from "@/lib/prisma";
+import {
+  getCachedLifetimeStudyHours,
+  getCachedStudySessionCount,
+  getCachedStudySessionPage,
+  studySessionPageSize,
+} from "@/lib/study-cache";
 
 export const metadata: Metadata = {
   title: "Remove Logged Hours",
@@ -26,8 +31,6 @@ const sessionDateFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "numeric",
   minute: "2-digit",
 });
-
-const pageSize = 50;
 
 function getSearchParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -57,33 +60,19 @@ export default async function RemoveHoursPage({
   const currentPage =
     Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
-  const [sessionCount, totalResult, sessionRows] = await Promise.all([
-    prisma.studySession.count({ where: { userId } }),
-    prisma.studySession.aggregate({
-      where: { userId },
-      _sum: { hours: true },
-    }),
-    prisma.studySession.findMany({
-      where: { userId },
-      select: {
-        id: true,
-        subject: true,
-        hours: true,
-        date: true,
-      },
-      orderBy: [{ date: "asc" }, { id: "asc" }],
-      take: pageSize + 1,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-    }),
+  const [sessionCount, totalHours, sessionRows] = await Promise.all([
+    getCachedStudySessionCount(userId),
+    getCachedLifetimeStudyHours(userId),
+    getCachedStudySessionPage(userId, cursor ?? null),
   ]);
 
-  const hasMore = sessionRows.length > pageSize;
-  const studySessions = hasMore ? sessionRows.slice(0, pageSize) : sessionRows;
+  const hasMore = sessionRows.length > studySessionPageSize;
+  const studySessions = hasMore
+    ? sessionRows.slice(0, studySessionPageSize)
+    : sessionRows;
   const nextCursor = hasMore
     ? studySessions[studySessions.length - 1]?.id
     : undefined;
-  const totalHours = totalResult._sum.hours ?? 0;
-
   return (
     <div className="min-h-screen bg-background p-6 font-sans text-foreground md:p-10">
       <header className="mx-auto mb-10 flex max-w-5xl flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
@@ -147,7 +136,9 @@ export default async function RemoveHoursPage({
           {studySessions.length > 0 ? (
             <ul className="divide-y divide-border">
               {studySessions.map((studySession) => {
-                const dateLabel = sessionDateFormatter.format(studySession.date);
+                const dateLabel = sessionDateFormatter.format(
+                  new Date(studySession.date)
+                );
 
                 return (
                   <li
@@ -197,7 +188,7 @@ export default async function RemoveHoursPage({
             className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-4"
           >
             <p className="text-sm text-muted">
-              Page {currentPage} · Up to {pageSize} sessions per page
+              Page {currentPage} · Up to {studySessionPageSize} sessions per page
             </p>
             <div className="flex flex-wrap items-center gap-3">
               {cursor ? (

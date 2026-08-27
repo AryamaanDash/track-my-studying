@@ -1,9 +1,10 @@
 // app/actions.ts
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { auth } from "../auth";
 import { prisma } from "../lib/prisma";
+import { getStudyDataCacheTag } from "../lib/study-cache";
 
 function getFormString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -55,6 +56,7 @@ export async function addStudySession(formData: FormData) {
     },
   });
 
+  updateTag(getStudyDataCacheTag(userId));
   revalidatePath("/dashboard");
 }
 
@@ -77,6 +79,7 @@ export async function deleteSession(id: string) {
     throw new Error("Study session not found");
   }
 
+  updateTag(getStudyDataCacheTag(userId));
   revalidatePath("/dashboard");
   revalidatePath("/remove-hours");
 }
