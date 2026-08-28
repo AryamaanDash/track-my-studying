@@ -95,6 +95,7 @@ model StudySession {
   subject   String   
   hours     Float
   date      DateTime @default(now())
+  journal   String?
   
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

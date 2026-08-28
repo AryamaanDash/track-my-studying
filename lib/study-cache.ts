@@ -35,6 +35,7 @@ export async function getCachedPreviousStudySession(userId: string) {
       subject: true,
       hours: true,
       date: true,
+      journal: true,
     },
     orderBy: [{ date: "desc" }, { id: "desc" }],
   });

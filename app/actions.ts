@@ -27,6 +27,7 @@ export async function addStudySession(formData: FormData) {
   const subject = getFormString(formData, "subject");
   const hoursValue = getFormString(formData, "hours");
   const dateValue = getFormString(formData, "date");
+  const journal = getFormString(formData, "journal");
   const hours = Number(hoursValue);
 
   if (!subject) {
@@ -41,6 +42,10 @@ export async function addStudySession(formData: FormData) {
     throw new Error("Hours must be a number between 0 and 24");
   }
 
+  if (journal.length > 10000) {
+    throw new Error("Journal must be 10,000 characters or fewer");
+  }
+
   const date = dateValue ? new Date(dateValue) : new Date();
 
   if (Number.isNaN(date.getTime())) {
@@ -52,6 +57,7 @@ export async function addStudySession(formData: FormData) {
       subject,
       hours,
       date,
+      journal: journal || null,
       userId,
     },
   });

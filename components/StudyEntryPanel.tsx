@@ -6,6 +6,7 @@ type PreviousSession = {
   subject: string;
   hours: number;
   date: string;
+  journal: string | null;
 };
 
 const previousDateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -76,6 +77,18 @@ export default function StudyEntryPanel({
           <StudySessionDateTimeInput id="study-date" />
         </div>
 
+        <div className="journal-form-group journal-form-group--journal">
+          <label htmlFor="study-journal">Notes</label>
+          <textarea
+            id="study-journal"
+            name="journal"
+            rows={5}
+            maxLength={10000}
+            placeholder="Write anything—notes, thoughts, links..."
+            className="journal-textarea journal-hand"
+          />
+        </div>
+
         <button type="submit" className="journal-save-button">
           Save Entry
         </button>
@@ -96,6 +109,9 @@ export default function StudyEntryPanel({
               {previousSession.subject} <span aria-hidden="true">—</span>{" "}
               <span>{previousSession.hours.toFixed(1)} hrs</span>
             </p>
+            {previousSession.journal ? (
+              <p className="previous-entry-journal">{previousSession.journal}</p>
+            ) : null}
           </div>
         ) : (
           <p className="previous-entry-empty">

@@ -15,6 +15,7 @@ export type PreviousJournalSession = {
   subject: string;
   hours: number;
   date: string;
+  journal: string | null;
 };
 
 export default function StudyJournal({
