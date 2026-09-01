@@ -1,4 +1,5 @@
 import { addStudySession } from "@/app/actions";
+import DotBorderButton from "@/components/ui/dot-border-button";
 import { getSubjectColor } from "@/lib/study-colors";
 import StudySessionDateTimeInput from "@/components/StudySessionDateTimeInput";
 
@@ -89,9 +90,14 @@ export default function StudyEntryPanel({
           />
         </div>
 
-        <button type="submit" className="journal-save-button">
+        <DotBorderButton
+          type="submit"
+          className="journal-save-button"
+          wrapperClassName="journal-save-button-wrap"
+          pendingLabel="Saving entry…"
+        >
           Save Entry
-        </button>
+        </DotBorderButton>
         <p className="journal-form-note">
           Your saved sessions will appear in your journal and analytics.
         </p>

@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { BookOpen, Lock, Mail } from "lucide-react";
 import { auth, signIn } from "@/auth";
 import JournalAuthPage from "@/components/JournalAuthPage";
+import DotBorderButton from "@/components/ui/dot-border-button";
 
 const loginErrorMessages: Record<string, string> = {
   invalid_credentials: "That email and password combination didn't match our records.",
@@ -129,10 +130,14 @@ export default async function LoginPage({
           />
         </div>
 
-        <button type="submit" className="journal-auth-submit">
+        <DotBorderButton
+          type="submit"
+          className="journal-auth-submit"
+          pendingLabel="Opening your journal…"
+        >
           <BookOpen aria-hidden="true" />
           Open my journal
-        </button>
+        </DotBorderButton>
       </form>
     </JournalAuthPage>
   );

@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { Lock, Mail, UserPlus } from "lucide-react";
 import { auth } from "@/auth";
 import JournalAuthPage from "@/components/JournalAuthPage";
+import DotBorderButton from "@/components/ui/dot-border-button";
 import { prisma } from "@/lib/prisma";
 
 const registerErrorMessages: Record<string, string> = {
@@ -153,10 +154,14 @@ export default async function RegisterPage({
           </span>
         </div>
 
-        <button type="submit" className="journal-auth-submit">
+        <DotBorderButton
+          type="submit"
+          className="journal-auth-submit"
+          pendingLabel="Creating your journal…"
+        >
           <UserPlus aria-hidden="true" />
           Create my journal
-        </button>
+        </DotBorderButton>
       </form>
     </JournalAuthPage>
   );

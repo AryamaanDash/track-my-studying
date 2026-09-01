@@ -45,9 +45,9 @@
   --accent-hover: #4f7977;
   --accent-soft: #e1e8e3;
   --accent-foreground: #f8f3e8;
-  --button: #2f3534;
-  --button-hover: #202625;
-  --button-foreground: #faf6ec;
+  --button: #d9d6ce;
+  --button-hover: #cbc7be;
+  --button-foreground: #2f2e2a;
   --danger: #a44d46;
   --danger-soft: #f4ddd7;
   --danger-border: #d8aaa1;
@@ -98,9 +98,9 @@ html[data-theme="dark"] {
   --accent-hover: #91b3b0;
   --accent-soft: #293b38;
   --accent-foreground: #171b1b;
-  --button: #e4dccd;
-  --button-hover: #f3ebdc;
-  --button-foreground: #272722;
+  --button: #4a4a45;
+  --button-hover: #565650;
+  --button-foreground: #f1ece2;
   --danger: #df8278;
   --danger-soft: #472e2b;
   --danger-border: #75453f;
@@ -377,7 +377,7 @@ select {
 
 .journal-form-group--subject,
 .journal-form-group--journal,
-.journal-save-button,
+.journal-save-button-wrap,
 .journal-form-note {
   grid-column: 1 / -1;
 }
@@ -491,17 +491,20 @@ select {
   background-color: color-mix(in srgb, var(--blue) 4%, var(--paper-secondary));
 }
 
-.journal-save-button {
+.journal-entry-form > .journal-save-button-wrap {
   width: min(78%, 400px);
   margin: 4px auto 0;
+}
+
+.journal-save-button {
+  width: 100%;
+  margin: 0;
   padding: clamp(10px, 1.4vh, 14px) 24px;
-  border: 1px solid color-mix(in srgb, var(--ink) 80%, black);
+  border: 1px solid color-mix(in srgb, var(--button) 76%, black);
   border-radius: 999px;
-  background-color: #303736;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.035) 0.7px, transparent 0.8px);
-  background-size: 5px 5px;
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.09), 0 2px 0 rgba(38, 36, 31, 0.22);
-  color: #faf6ec;
+  background: var(--button);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.09), 0 3px 8px rgba(0, 0, 0, 0.16);
+  color: var(--button-foreground);
   cursor: pointer;
   font-family: var(--journal-serif);
   font-size: 1.05rem;
@@ -510,7 +513,7 @@ select {
 }
 
 .journal-save-button:hover {
-  background-color: #222928;
+  background: var(--button-hover);
 }
 
 .journal-save-button:active {
@@ -1248,7 +1251,7 @@ select {
 
   .journal-form-group--subject,
   .journal-form-group--journal,
-  .journal-save-button,
+  .journal-save-button-wrap,
   .journal-form-note {
     grid-column: auto;
   }
@@ -1267,7 +1270,7 @@ select {
     margin-top: -26px;
   }
 
-  .journal-save-button,
+  .journal-entry-form > .journal-save-button-wrap,
   .journal-hours-field {
     width: 100%;
   }

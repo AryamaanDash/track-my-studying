@@ -72,7 +72,7 @@
         "source": "app/globals.css"
       },
       "--button-foreground": {
-        "value": "#272722",
+        "value": "#f1ece2",
         "source": "app/globals.css"
       },
       "--danger-border": {
@@ -251,6 +251,7 @@
     "The authenticated dashboard uses a restrained open-study-journal layout: a spacious entry page on the left, a denser analytics and calendar page on the right, a warm paper palette in light mode, and muted charcoal journal paper in dark mode.",
     "The public homepage keeps the warm desk header visually separate from a dark teal journal cover that fills the remainder of the viewport with only a narrow outer gutter. Its intro pulls back from a centered welcome message and stages the cover content into view; scrolling up returns to the welcome view and scrolling down restores the cover, while reduced-motion users remain in the finished state.",
     "Authentication screens retain a focused single cream inside-cover form page, but the dark cloth journal and paper now fill the entire area beneath the shared header. Ruled fields, handwritten annotations, and the route back to the journal cover remain consistent.",
+    "Primary submission controls share a restrained dot-and-drawn-border hover and keyboard-focus effect: the decoration follows the ink token so it is dark on light paper and light on dark paper, while neutral button fills keep the effect prominent. Reduced-motion and explicit pending feedback remain supported.",
     "The global 404 is the journal's back cover: it mirrors the public cover's teal cloth, gilt frame, page edges, and responsive full-viewport composition while reversing the spine and keeping the error message intentionally sparse."
   ],
   "evidence": [
