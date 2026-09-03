@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import {
   ArrowLeft,
-  CalendarClock,
+  CalendarDays,
   ChevronRight,
   LogOut,
   RotateCcw,
@@ -28,8 +28,7 @@ const sessionDateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
   year: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
+  timeZone: "UTC",
 });
 
 function getSearchParam(value: string | string[] | undefined) {
@@ -150,7 +149,7 @@ export default async function RemoveHoursPage({
                         {studySession.subject}
                       </p>
                       <p className="mt-1 flex items-center gap-2 text-sm text-muted">
-                        <CalendarClock className="h-4 w-4 shrink-0" />
+                        <CalendarDays className="h-4 w-4 shrink-0" />
                         {dateLabel}
                       </p>
                     </div>

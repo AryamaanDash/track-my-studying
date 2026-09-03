@@ -11,6 +11,23 @@ function getFormString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function parseStudyDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw new Error("Study date must be a calendar day");
+  }
+
+  const date = new Date(`${value}T00:00:00.000Z`);
+
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== value
+  ) {
+    throw new Error("Invalid study date");
+  }
+
+  return date;
+}
+
 async function getCurrentUserIdOrThrow() {
   const session = await auth();
   const userId = session?.user?.id;
@@ -46,11 +63,7 @@ export async function addStudySession(formData: FormData) {
     throw new Error("Journal must be 10,000 characters or fewer");
   }
 
-  const date = dateValue ? new Date(dateValue) : new Date();
-
-  if (Number.isNaN(date.getTime())) {
-    throw new Error("Invalid study date");
-  }
+  const date = parseStudyDate(dateValue);
 
   await prisma.studySession.create({
     data: {

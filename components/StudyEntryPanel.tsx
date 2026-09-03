@@ -1,7 +1,7 @@
 import { addStudySession } from "@/app/actions";
+import StudySessionDateInput from "@/components/StudySessionDateInput";
 import DotBorderButton from "@/components/ui/dot-border-button";
 import { getSubjectColor } from "@/lib/study-colors";
-import StudySessionDateTimeInput from "@/components/StudySessionDateTimeInput";
 
 type PreviousSession = {
   subject: string;
@@ -13,6 +13,7 @@ type PreviousSession = {
 const previousDateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
+  timeZone: "UTC",
 });
 
 export default function StudyEntryPanel({
@@ -74,8 +75,8 @@ export default function StudyEntryPanel({
         </div>
 
         <div className="journal-form-group journal-form-group--date">
-          <label htmlFor="study-date">Date &amp; time</label>
-          <StudySessionDateTimeInput id="study-date" />
+          <label htmlFor="study-date">Date</label>
+          <StudySessionDateInput id="study-date" />
         </div>
 
         <div className="journal-form-group journal-form-group--journal">

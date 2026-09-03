@@ -10,6 +10,10 @@ import {
 
 export const studySessionPageSize = 50;
 
+function serializeStudyDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
 const studyCacheLifetime = {
   stale: 5 * 60,
   revalidate: 15 * 60,
@@ -43,7 +47,7 @@ export async function getCachedPreviousStudySession(userId: string) {
   return previousSession
     ? {
         ...previousSession,
-        date: previousSession.date.toISOString(),
+        date: serializeStudyDate(previousSession.date),
       }
     : null;
 }
@@ -89,7 +93,7 @@ export async function getCachedStudySessionPage(
 
   return studySessions.map((studySession) => ({
     ...studySession,
-    date: studySession.date.toISOString(),
+    date: serializeStudyDate(studySession.date),
   }));
 }
 

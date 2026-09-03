@@ -94,7 +94,7 @@ model StudySession {
   id        String   @id @default(cuid())
   subject   String   
   hours     Float
-  date      DateTime @default(now())
+  date      DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
   journal   String?
   
   userId    String
