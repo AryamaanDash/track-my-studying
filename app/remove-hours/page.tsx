@@ -1,13 +1,15 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import {
   ArrowLeft,
-  CalendarDays,
-  ChevronRight,
+  ArrowRight,
+  BookOpenText,
   LogOut,
   RotateCcw,
+  Sprout,
   Trash2,
 } from "lucide-react";
 import { auth, signOut } from "@/auth";
@@ -19,6 +21,7 @@ import {
   getCachedStudySessionPage,
   studySessionPageSize,
 } from "@/lib/study-cache";
+import { getSubjectColor } from "@/lib/study-colors";
 
 export const metadata: Metadata = {
   title: "Remove Logged Hours",
@@ -47,7 +50,6 @@ export default async function RemoveHoursPage({
 
   const session = await auth();
   const userId = session?.user?.id;
-  const email = session?.user?.email ?? "";
 
   if (!userId) {
     redirect("/login");
@@ -72,147 +74,164 @@ export default async function RemoveHoursPage({
   const nextCursor = hasMore
     ? studySessions[studySessions.length - 1]?.id
     : undefined;
+
   return (
-    <div className="min-h-screen bg-background p-6 font-sans text-foreground md:p-10">
-      <header className="mx-auto mb-10 flex max-w-5xl flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
-        <div>
-          <Link
-            href="/dashboard"
-            className="mb-3 inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Dashboard
-          </Link>
-          <h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight">
-            <Trash2 className="h-6 w-6 text-danger" />
-            Remove Logged Hours
-          </h1>
-        </div>
+    <div className="journal-desk remove-hours-desk">
+      <main className="study-journal remove-hours-journal">
+        <section
+          className="journal-page journal-page--left remove-hours-page remove-hours-page--context"
+          aria-labelledby="remove-hours-title"
+        >
+          <header className="journal-brand">
+            <Sprout aria-hidden="true" />
+            <div>
+              <Link href="/dashboard">Track My Studying</Link>
+              <p>Personal Study Journal</p>
+            </div>
+          </header>
 
-        <div className="flex flex-wrap items-center gap-4 md:gap-6">
-          <ThemeSelector />
-          <span className="text-sm text-muted">{email}</span>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button className="flex items-center gap-2 text-sm text-muted transition-colors hover:text-danger">
-              <LogOut className="h-4 w-4" /> Sign Out
-            </button>
-          </form>
-        </div>
-      </header>
+          <div className="remove-hours-intro">
+            <p className="remove-hours-eyebrow">A small correction</p>
+            <div className="remove-hours-title-row">
+              <h1 id="remove-hours-title">Remove Logged Hours</h1>
+              <Trash2 aria-hidden="true" />
+            </div>
+            <p className="remove-hours-description">
+              Correct an entry from your study history.
+            </p>
 
-      <main className="mx-auto max-w-5xl space-y-6">
-        <section className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-3xl border border-border bg-surface p-5">
-            <span className="text-xs uppercase tracking-wider text-muted">
-              Sessions
-            </span>
-            <p className="mt-2 text-3xl font-bold">
-              {sessionCount}
-            </p>
+            <dl
+              className="remove-hours-summary"
+              aria-label="Study history summary"
+            >
+              <div>
+                <dt>Total sessions</dt>
+                <dd>{sessionCount}</dd>
+              </div>
+              <div>
+                <dt>Total logged hours</dt>
+                <dd>{totalHours.toFixed(1)}</dd>
+              </div>
+            </dl>
           </div>
-          <div className="rounded-3xl border border-border bg-surface p-5">
-            <span className="text-xs uppercase tracking-wider text-muted">
-              Logged Hours
-            </span>
-            <p className="mt-2 text-3xl font-bold text-accent">
-              {totalHours.toFixed(1)}
-            </p>
-          </div>
-          <div className="rounded-3xl border border-border bg-surface p-5">
-            <span className="text-xs uppercase tracking-wider text-muted">
-              Sort
-            </span>
-            <p className="mt-2 text-lg font-semibold">Oldest First</p>
-          </div>
+
+          <footer className="remove-hours-context-footer">
+            <nav
+              className="journal-utilities remove-hours-utilities"
+              aria-label="Journal utilities"
+            >
+              <Link href="/dashboard" className="journal-utility">
+                <ArrowLeft aria-hidden="true" />
+                Back to Dashboard
+              </Link>
+              <ThemeSelector />
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut({ redirectTo: "/login" });
+                }}
+              >
+                <button type="submit" className="journal-utility">
+                  <LogOut aria-hidden="true" />
+                  Sign Out
+                </button>
+              </form>
+            </nav>
+            <p>Only remove entries that were logged by mistake.</p>
+          </footer>
         </section>
 
-        <section className="overflow-hidden rounded-3xl border border-border bg-surface shadow-2xl">
-          {studySessions.length > 0 ? (
-            <ul className="divide-y divide-border">
-              {studySessions.map((studySession) => {
-                const dateLabel = sessionDateFormatter.format(
-                  new Date(studySession.date)
-                );
+        <section
+          className="journal-page journal-page--right remove-hours-page remove-hours-page--history"
+          aria-labelledby="study-history-title"
+        >
+          <header className="study-history-header">
+            <div>
+              <p>Recorded sessions</p>
+              <h2 id="study-history-title">Study History</h2>
+            </div>
+            <span className="study-history-page-number">Page {currentPage}</span>
+          </header>
 
-                return (
-                  <li
-                    key={studySession.id}
-                    className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-lg font-semibold">
-                        {studySession.subject}
-                      </p>
-                      <p className="mt-1 flex items-center gap-2 text-sm text-muted">
-                        <CalendarDays className="h-4 w-4 shrink-0" />
-                        {dateLabel}
-                      </p>
-                    </div>
+          <div className="study-history-columns" aria-hidden="true">
+            <span>Subject / date</span>
+            <span>Hours</span>
+          </div>
 
-                    <div className="flex items-center justify-between gap-4 sm:justify-end">
-                      <span className="rounded-xl bg-accent-soft px-3 py-2 text-sm font-bold text-accent">
-                        {studySession.hours.toFixed(1)} hrs
-                      </span>
+          <div className="study-history-scroll">
+            {studySessions.length > 0 ? (
+              <ol
+                className="study-history-ledger"
+                start={(currentPage - 1) * studySessionPageSize + 1}
+              >
+                {studySessions.map((studySession) => {
+                  const dateLabel = sessionDateFormatter.format(
+                    new Date(studySession.date)
+                  );
+                  const sessionStyle = {
+                    "--session-accent": getSubjectColor(studySession.subject),
+                  } as CSSProperties;
+
+                  return (
+                    <li key={studySession.id} style={sessionStyle}>
+                      <span className="study-history-accent" aria-hidden="true" />
+                      <div className="study-history-entry">
+                        <p>{studySession.subject}</p>
+                        <time dateTime={studySession.date}>{dateLabel}</time>
+                      </div>
+                      <strong>{studySession.hours.toFixed(1)} hrs</strong>
                       <RemoveStudySessionButton
                         sessionId={studySession.id}
                         subject={studySession.subject}
                         hours={studySession.hours}
                         dateLabel={dateLabel}
                       />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <div className="flex min-h-[300px] flex-col items-center justify-center p-8 text-center text-muted">
-              <Trash2 className="mb-4 h-12 w-12 opacity-20" />
-              <p>
-                {sessionCount > 0
-                  ? "No sessions remain on this page."
-                  : "No logged hours to remove."}
-              </p>
-            </div>
-          )}
-        </section>
+                    </li>
+                  );
+                })}
+              </ol>
+            ) : (
+              <div className="study-history-empty">
+                <BookOpenText aria-hidden="true" />
+                <p>
+                  {sessionCount > 0
+                    ? "No sessions remain on this page."
+                    : "No logged hours to remove."}
+                </p>
+                <span>Your study history will be written here.</span>
+              </div>
+            )}
+          </div>
 
-        {cursor || nextCursor ? (
-          <nav
-            aria-label="Study session pages"
-            className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-4"
-          >
-            <p className="text-sm text-muted">
-              Page {currentPage} · Up to {studySessionPageSize} sessions per page
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              {cursor ? (
-                <Link
-                  href="/remove-hours"
-                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface-strong px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface-muted"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  First Page
-                </Link>
-              ) : null}
-              {nextCursor ? (
-                <Link
-                  href={`/remove-hours?cursor=${encodeURIComponent(
-                    nextCursor
-                  )}&page=${currentPage + 1}`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-button px-4 py-2 text-sm font-semibold text-button-foreground transition-colors hover:bg-button-hover"
-                >
-                  Next 50
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              ) : null}
-            </div>
-          </nav>
-        ) : null}
+          {cursor || nextCursor ? (
+            <nav
+              className="study-history-pagination"
+              aria-label="Study session pages"
+            >
+              <p>Up to {studySessionPageSize} entries per page</p>
+              <div>
+                {cursor ? (
+                  <Link href="/remove-hours">
+                    <RotateCcw aria-hidden="true" />
+                    First page
+                  </Link>
+                ) : (
+                  <span aria-hidden="true" />
+                )}
+                {nextCursor ? (
+                  <Link
+                    href={`/remove-hours?cursor=${encodeURIComponent(
+                      nextCursor
+                    )}&page=${currentPage + 1}`}
+                  >
+                    Next 50
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                ) : null}
+              </div>
+            </nav>
+          ) : null}
+        </section>
       </main>
     </div>
   );

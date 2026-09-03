@@ -247,6 +247,7 @@
     "avoid": []
   },
   "decisions": [
+    "The Remove Hours route is a continuous second spread of the authenticated study journal: editorial context and handwritten totals live on the left page, a scroll-contained ruled session ledger lives on the right, and dashboard navigation advances with a physical right-to-left paper turn.",
     "The authenticated dashboard journal is full-bleed on desktop: it fills the dynamic viewport without outer desk gutters or document scrolling, while its entry, analytics, and calendar content compact fluidly with viewport height.",
     "The authenticated dashboard uses a restrained open-study-journal layout: a spacious entry page on the left, a denser analytics and calendar page on the right, a warm paper palette in light mode, and muted charcoal journal paper in dark mode.",
     "The public homepage keeps the warm desk header visually separate from a dark teal journal cover that fills the remainder of the viewport with only a narrow outer gutter. Its intro pulls back from a centered welcome message and stages the cover content into view; scrolling up returns to the welcome view and scrolling down restores the cover, while reduced-motion users remain in the finished state.",

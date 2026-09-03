@@ -2,6 +2,7 @@ import { signOut } from "@/auth";
 import StudyCalendar from "@/components/StudyCalendar";
 import StudyCharts from "@/components/StudyCharts";
 import StudyEntryPanel from "@/components/StudyEntryPanel";
+import JournalPageTurnLink from "@/components/JournalPageTurnLink";
 import ThemeSelector from "@/components/ThemeSelector";
 import WeeklyStudyCelebration from "@/components/WeeklyStudyCelebration";
 import type {
@@ -56,50 +57,64 @@ export default function StudyJournal({
           />
         </section>
 
-        <section className="journal-page journal-page--right" aria-label="Study analytics page">
-          <header className="journal-right-header">
-            <nav className="journal-utilities" aria-label="Journal utilities">
-              <ThemeSelector />
-              <Link href="/remove-hours" className="journal-utility">
-                <Trash2 aria-hidden="true" />
-                Remove Hours
-              </Link>
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut({ redirectTo: "/" });
-                }}
-              >
-                <button type="submit" className="journal-utility">
-                  <LogOut aria-hidden="true" />
-                  Sign Out
-                </button>
-              </form>
-            </nav>
+        <div className="journal-page-turn-underlay" aria-hidden="true">
+          <span>Study History</span>
+          <i />
+          <i />
+          <i />
+          <i />
+        </div>
 
-            <div className="journal-total" aria-label={`${totalHours.toFixed(1)} total hours`}>
-              <strong>{totalHours.toFixed(1)}</strong>
-              <span>Total Hours</span>
-            </div>
-          </header>
+        <div className="journal-page-turn-sheet">
+          <section className="journal-page journal-page--right" aria-label="Study analytics page">
+            <header className="journal-right-header">
+              <nav className="journal-utilities" aria-label="Journal utilities">
+                <ThemeSelector />
+                <JournalPageTurnLink href="/remove-hours" className="journal-utility">
+                  <Trash2 aria-hidden="true" />
+                  Remove Hours
+                </JournalPageTurnLink>
+                <form
+                  action={async () => {
+                    "use server";
+                    await signOut({ redirectTo: "/" });
+                  }}
+                >
+                  <button type="submit" className="journal-utility">
+                    <LogOut aria-hidden="true" />
+                    Sign Out
+                  </button>
+                </form>
+              </nav>
 
-          <StudyCharts
-            key={`charts-${totalHours}`}
-            initialData={initialChartData}
-          />
-          <StudyCalendar
-            key={`calendar-${totalHours}`}
-            initialData={initialCalendarData}
-            fallbackDate={referenceDate}
-          />
+              <div className="journal-total" aria-label={`${totalHours.toFixed(1)} total hours`}>
+                <strong>{totalHours.toFixed(1)}</strong>
+                <span>Total Hours</span>
+              </div>
+            </header>
 
-          <footer className="journal-colophon">
-            <span>Notes become progress.</span>
-            <a href="https://aryamaan-dash.vercel.app/" target="_blank" rel="noreferrer">
-              Made by Aryamaan Dash
-            </a>
-          </footer>
-        </section>
+            <StudyCharts
+              key={`charts-${totalHours}`}
+              initialData={initialChartData}
+            />
+            <StudyCalendar
+              key={`calendar-${totalHours}`}
+              initialData={initialCalendarData}
+              fallbackDate={referenceDate}
+            />
+
+            <footer className="journal-colophon">
+              <span>Notes become progress.</span>
+              <a href="https://aryamaan-dash.vercel.app/" target="_blank" rel="noreferrer">
+                Made by Aryamaan Dash
+              </a>
+            </footer>
+          </section>
+
+          <div className="journal-page-turn-back" aria-hidden="true">
+            <span>continued</span>
+          </div>
+        </div>
       </main>
     </div>
   );

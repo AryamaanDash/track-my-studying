@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, LoaderCircle, Trash2, X } from "lucide-react";
 import { deleteSession } from "@/app/actions";
 
@@ -53,80 +54,88 @@ export default function RemoveStudySessionButton({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center justify-center gap-2 rounded-xl border border-danger-border bg-danger-soft px-3 py-2 text-sm font-semibold text-danger-foreground transition-colors hover:border-danger hover:text-danger"
+        className="ledger-remove-button"
       >
-        <Trash2 className="h-4 w-4" />
+        <Trash2 aria-hidden="true" />
         Remove
       </button>
 
-      {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div
-            aria-labelledby={`remove-session-${sessionId}`}
-            aria-modal="true"
-            className="w-full max-w-md rounded-3xl border border-border bg-surface p-6 text-foreground shadow-2xl"
-            role="dialog"
-          >
-            <div className="mb-5 flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <span className="rounded-full bg-danger-soft p-2 text-danger">
-                  <AlertTriangle className="h-5 w-5" />
-                </span>
-                <div>
-                  <h2
-                    id={`remove-session-${sessionId}`}
-                    className="text-lg font-semibold"
+      {isOpen
+        ? createPortal(
+            <div className="journal-dialog-backdrop">
+              <div
+                aria-labelledby={`remove-session-${sessionId}`}
+                aria-describedby={`remove-session-description-${sessionId}`}
+                aria-modal="true"
+                className="journal-confirmation"
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") closeDialog();
+                }}
+                role="dialog"
+              >
+                <div className="journal-confirmation-header">
+                  <div>
+                    <span className="journal-confirmation-mark">
+                      <AlertTriangle aria-hidden="true" />
+                    </span>
+                    <div>
+                      <h2 id={`remove-session-${sessionId}`}>
+                        Remove this session?
+                      </h2>
+                      <p id={`remove-session-description-${sessionId}`}>
+                        {hours.toFixed(1)} hours for {subject} on {dateLabel}.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={closeDialog}
+                    className="journal-confirmation-close"
+                    aria-label="Close confirmation"
                   >
-                    Remove this session?
-                  </h2>
-                  <p className="mt-1 text-sm text-muted">
-                    {hours.toFixed(1)} hours for {subject} on {dateLabel}.
+                    <X aria-hidden="true" />
+                  </button>
+                </div>
+
+                {error ? (
+                  <p className="journal-confirmation-error" role="alert">
+                    {error}
                   </p>
+                ) : null}
+
+                <div className="journal-confirmation-actions">
+                  <button
+                    type="button"
+                    onClick={closeDialog}
+                    disabled={isRemoving}
+                    className="journal-confirmation-keep"
+                    autoFocus
+                  >
+                    Keep Session
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmRemoval}
+                    disabled={isRemoving}
+                    className="journal-confirmation-remove"
+                  >
+                    {isRemoving ? (
+                      <LoaderCircle
+                        className="journal-spinner"
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <Trash2 aria-hidden="true" />
+                    )}
+                    Remove Session
+                  </button>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={closeDialog}
-                className="rounded-lg p-1 text-muted transition-colors hover:bg-surface-strong hover:text-foreground"
-                aria-label="Close confirmation"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {error ? (
-              <p className="mb-4 rounded-xl border border-danger-border bg-danger-soft px-3 py-2 text-sm text-danger-foreground">
-                {error}
-              </p>
-            ) : null}
-
-            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={closeDialog}
-                disabled={isRemoving}
-                className="rounded-xl border border-border bg-surface-strong px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Keep Session
-              </button>
-              <button
-                type="button"
-                onClick={confirmRemoval}
-                disabled={isRemoving}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-danger px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isRemoving ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-                Remove Session
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+            </div>,
+            document.body
+          )
+        : null}
     </>
   );
 }
