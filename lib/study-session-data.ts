@@ -2,6 +2,7 @@ import "server-only";
 
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getExclusiveUtcDayEnd } from "@/lib/study-date-range";
 
 export const studyTimeframes = ["week", "month", "year", "all"] as const;
 
@@ -126,10 +127,11 @@ export async function getStudyChartData(
   timeframe: StudyTimeframe,
   referenceDate = new Date()
 ) {
+  const end = getExclusiveUtcDayEnd(referenceDate);
   const rows = await getAggregatedStudyPoints({
     userId,
-    start: getTimeframeStart(timeframe, referenceDate),
-    end: referenceDate,
+    start: getTimeframeStart(timeframe, end),
+    end,
   });
 
   return summarizeRows(rows);

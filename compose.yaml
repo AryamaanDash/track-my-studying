@@ -1,0 +1,24 @@
+name: track-my-studying
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: track_my_studying
+      POSTGRES_USER: track_my_studying
+      POSTGRES_PASSWORD: local_development_password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U track_my_studying -d track_my_studying
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  postgres_data:
