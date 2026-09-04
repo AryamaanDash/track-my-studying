@@ -8,6 +8,9 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:docker": "node scripts/run-with-docker-env.mjs dev",
+    "docker:up": "docker compose up --build --wait",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs --follow app",
     "build": "node scripts/require-auth-secret.mjs && prisma generate && node scripts/require-database-url.mjs && prisma migrate deploy && next build",
     "build:app": "prisma generate && next build",
     "start": "next start",
