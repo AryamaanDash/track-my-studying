@@ -9,7 +9,7 @@ import type {
   StudyCalendarData,
   StudyChartData,
 } from "@/lib/study-session-data";
-import { LogOut, Settings2, Sprout, Trash2 } from "lucide-react";
+import { FilePenLine, LogOut, Settings2, Sprout } from "lucide-react";
 import Link from "next/link";
 
 export type PreviousJournalSession = {
@@ -71,8 +71,8 @@ export default function StudyJournal({
               <nav className="journal-utilities" aria-label="Journal utilities">
                 <ThemeSelector />
                 <JournalPageTurnLink href="/remove-hours" className="journal-utility">
-                  <Trash2 aria-hidden="true" />
-                  Remove Hours
+                  <FilePenLine aria-hidden="true" />
+                  Edit Hours
                 </JournalPageTurnLink>
                 <Link href="/settings" className="journal-utility">
                   <Settings2 aria-hidden="true" />

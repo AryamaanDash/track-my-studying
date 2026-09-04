@@ -1371,7 +1371,7 @@ select {
   width: 20px;
   height: 20px;
   flex: none;
-  color: var(--danger);
+  color: var(--accent);
   opacity: 0.72;
   stroke-width: 1.5;
   transform: rotate(3deg);
@@ -1487,7 +1487,7 @@ select {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 78px;
   gap: 18px;
-  padding: 8px 112px 8px 22px;
+  padding: 8px 184px 8px 22px;
   border-block: 1px solid var(--rule-strong);
   color: var(--muted-ink);
   font-size: 0.55rem;
@@ -1587,6 +1587,22 @@ select {
   text-transform: uppercase;
 }
 
+.study-history-entry p.study-history-note-preview {
+  display: -webkit-box;
+  margin-top: 5px;
+  overflow: hidden;
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: 0.66rem;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .study-history-ledger li > strong {
   color: color-mix(in srgb, var(--session-accent) 78%, var(--ink));
   font-family: var(--journal-hand);
@@ -1597,6 +1613,13 @@ select {
   transform: rotate(-0.8deg);
 }
 
+.study-history-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ledger-edit-button,
 .ledger-remove-button {
   display: inline-flex;
   min-height: 36px;
@@ -1608,11 +1631,25 @@ select {
   border-bottom-color: var(--danger-border);
   border-radius: 2px;
   background: transparent;
-  color: var(--danger-foreground);
   cursor: pointer;
   font-family: var(--journal-serif);
   font-size: 0.7rem;
   transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+
+.ledger-edit-button {
+  border-bottom-color: var(--accent);
+  color: color-mix(in srgb, var(--accent) 82%, var(--ink));
+}
+
+.ledger-edit-button:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 62%, transparent);
+  color: var(--accent-hover);
+}
+
+.ledger-remove-button {
+  color: var(--danger-foreground);
 }
 
 .ledger-remove-button:hover {
@@ -1621,10 +1658,17 @@ select {
   color: var(--danger);
 }
 
+.ledger-edit-button svg,
 .ledger-remove-button svg {
   width: 14px;
   height: 14px;
   stroke-width: 1.6;
+}
+
+.ledger-edit-button:focus-visible,
+.ledger-remove-button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 .study-history-empty {
@@ -1857,6 +1901,81 @@ select {
 .journal-confirmation-remove svg {
   width: 14px;
   height: 14px;
+}
+
+.journal-edit-dialog {
+  width: min(100%, 610px);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  transform: rotate(-0.12deg);
+}
+
+.journal-edit-mark {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.journal-edit-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px 24px;
+  margin-top: 22px;
+}
+
+.journal-edit-field--subject,
+.journal-edit-field--journal,
+.journal-edit-form > .journal-confirmation-error,
+.journal-edit-actions {
+  grid-column: 1 / -1;
+}
+
+.journal-edit-form .journal-input {
+  font-size: 1rem;
+}
+
+.journal-edit-form .journal-textarea {
+  height: 136px;
+  min-height: 112px;
+  resize: vertical;
+}
+
+.journal-edit-hours-field {
+  width: 100%;
+}
+
+.journal-edit-form > .journal-confirmation-error {
+  margin: 0;
+}
+
+.journal-edit-actions {
+  margin-top: 2px;
+  padding-top: 18px;
+  border-top: 1px dotted var(--rule-strong);
+}
+
+.journal-edit-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid color-mix(in srgb, var(--button) 76%, black);
+  background: var(--button);
+  color: var(--button-foreground);
+}
+
+.journal-edit-save:hover:not(:disabled) {
+  background: var(--button-hover);
+}
+
+.journal-edit-save svg {
+  width: 14px;
+  height: 14px;
+}
+
+.journal-confirmation-close:focus-visible,
+.journal-confirmation-actions button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 .journal-spinner {
@@ -2598,10 +2717,25 @@ select {
     grid-row: 1;
   }
 
-  .ledger-remove-button {
+  .study-history-actions {
     grid-column: 2 / -1;
-    min-width: 82px;
     justify-self: start;
+  }
+
+  .ledger-edit-button,
+  .ledger-remove-button {
+    min-width: 82px;
+  }
+
+  .journal-edit-form {
+    grid-template-columns: 1fr;
+  }
+
+  .journal-edit-field--subject,
+  .journal-edit-field--journal,
+  .journal-edit-form > .journal-confirmation-error,
+  .journal-edit-actions {
+    grid-column: auto;
   }
 
   .study-history-pagination > p {

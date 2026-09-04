@@ -85,6 +85,7 @@ export async function getCachedStudySessionPage(
       subject: true,
       hours: true,
       date: true,
+      journal: true,
     },
     orderBy: [{ date: "asc" }, { id: "asc" }],
     take: studySessionPageSize + 1,

@@ -7,13 +7,14 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpenText,
+  FilePenLine,
   LogOut,
   RotateCcw,
   Sprout,
-  Trash2,
 } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import RemoveStudySessionButton from "@/components/RemoveStudySessionButton";
+import EditStudySessionButton from "@/components/EditStudySessionButton";
 import ThemeSelector from "@/components/ThemeSelector";
 import {
   getCachedLifetimeStudyHours,
@@ -24,7 +25,7 @@ import {
 import { getSubjectColor } from "@/lib/study-colors";
 
 export const metadata: Metadata = {
-  title: "Remove Logged Hours",
+  title: "Edit Logged Hours",
 };
 
 const sessionDateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -93,11 +94,11 @@ export default async function RemoveHoursPage({
           <div className="remove-hours-intro">
             <p className="remove-hours-eyebrow">A small correction</p>
             <div className="remove-hours-title-row">
-              <h1 id="remove-hours-title">Remove Logged Hours</h1>
-              <Trash2 aria-hidden="true" />
+              <h1 id="remove-hours-title">Edit Logged Hours</h1>
+              <FilePenLine aria-hidden="true" />
             </div>
             <p className="remove-hours-description">
-              Correct an entry from your study history.
+              Revise a study entry or remove one logged by mistake.
             </p>
 
             <dl
@@ -137,7 +138,7 @@ export default async function RemoveHoursPage({
                 </button>
               </form>
             </nav>
-            <p>Only remove entries that were logged by mistake.</p>
+            <p>Revise an entry or remove one that was logged by mistake.</p>
           </footer>
         </section>
 
@@ -178,14 +179,28 @@ export default async function RemoveHoursPage({
                       <div className="study-history-entry">
                         <p>{studySession.subject}</p>
                         <time dateTime={studySession.date}>{dateLabel}</time>
+                        {studySession.journal ? (
+                          <p className="study-history-note-preview">
+                            {studySession.journal}
+                          </p>
+                        ) : null}
                       </div>
                       <strong>{studySession.hours.toFixed(1)} hrs</strong>
-                      <RemoveStudySessionButton
-                        sessionId={studySession.id}
-                        subject={studySession.subject}
-                        hours={studySession.hours}
-                        dateLabel={dateLabel}
-                      />
+                      <div className="study-history-actions">
+                        <EditStudySessionButton
+                          sessionId={studySession.id}
+                          subject={studySession.subject}
+                          hours={studySession.hours}
+                          date={studySession.date}
+                          journal={studySession.journal}
+                        />
+                        <RemoveStudySessionButton
+                          sessionId={studySession.id}
+                          subject={studySession.subject}
+                          hours={studySession.hours}
+                          dateLabel={dateLabel}
+                        />
+                      </div>
                     </li>
                   );
                 })}

@@ -29,19 +29,7 @@ function parseStudyDate(value: string) {
   return date;
 }
 
-async function getCurrentUserIdOrThrow() {
-  const session = await auth();
-  const userId = session?.user?.id;
-
-  if (!userId) {
-    throw new Error("Not authorized");
-  }
-
-  return userId;
-}
-
-export async function addStudySession(formData: FormData) {
-  const userId = await getCurrentUserIdOrThrow();
+function parseStudySessionFormData(formData: FormData) {
   const subject = getFormString(formData, "subject");
   const hoursValue = getFormString(formData, "hours");
   const dateValue = getFormString(formData, "date");
@@ -64,20 +52,64 @@ export async function addStudySession(formData: FormData) {
     throw new Error("Journal must be 10,000 characters or fewer");
   }
 
-  const date = parseStudyDate(dateValue);
+  return {
+    subject,
+    hours,
+    date: parseStudyDate(dateValue),
+    journal: journal || null,
+  };
+}
+
+async function getCurrentUserIdOrThrow() {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    throw new Error("Not authorized");
+  }
+
+  return userId;
+}
+
+export async function addStudySession(formData: FormData) {
+  const userId = await getCurrentUserIdOrThrow();
+  const studySession = parseStudySessionFormData(formData);
 
   await prisma.studySession.create({
     data: {
-      subject,
-      hours,
-      date,
-      journal: journal || null,
+      ...studySession,
       userId,
     },
   });
 
   updateTag(getStudyDataCacheTag(userId));
   revalidatePath("/dashboard");
+}
+
+export async function updateStudySession(id: string, formData: FormData) {
+  const userId = await getCurrentUserIdOrThrow();
+  const sessionId = id.trim();
+
+  if (!sessionId) {
+    throw new Error("Study session id is required");
+  }
+
+  const studySession = parseStudySessionFormData(formData);
+  const { count } = await prisma.studySession.updateMany({
+    where: {
+      id: sessionId,
+      userId,
+    },
+    data: studySession,
+  });
+
+  if (count === 0) {
+    throw new Error("Study session not found");
+  }
+
+  updateTag(getStudyDataCacheTag(userId));
+  revalidatePath("/dashboard");
+  revalidatePath("/remove-hours");
 }
 
 export async function deleteSession(id: string) {
