@@ -1869,6 +1869,398 @@ select {
   }
 }
 
+.settings-journal {
+  grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+}
+
+.settings-journal::before,
+.settings-journal::after {
+  left: 45%;
+}
+
+.settings-page {
+  padding: clamp(24px, 4vh, 48px) clamp(28px, 4vw, 64px);
+}
+
+.settings-intro {
+  margin-top: clamp(68px, 11vh, 122px);
+}
+
+.settings-eyebrow,
+.settings-danger-header > p {
+  margin: 0 0 10px;
+  color: var(--teal);
+  font-size: 0.58rem;
+  font-weight: 750;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+}
+
+.settings-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 15px;
+  border-bottom: 1px dotted var(--rule-strong);
+}
+
+.settings-title-row h1 {
+  margin: 0;
+  font-family: var(--journal-serif);
+  font-size: clamp(2.15rem, 3.5vw, 3.65rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+}
+
+.settings-title-row svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--teal);
+  opacity: 0.76;
+  stroke-width: 1.4;
+  transform: rotate(5deg);
+}
+
+.settings-description {
+  max-width: 31rem;
+  margin: 16px 0 0;
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: clamp(0.9rem, 1.25vw, 1.06rem);
+  font-style: italic;
+  line-height: 1.58;
+}
+
+.settings-account-card {
+  margin: clamp(34px, 5.5vh, 58px) 0 0;
+  border-block: 1px dotted var(--rule-strong);
+}
+
+.settings-account-card > div {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.42fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  padding: 17px 5px;
+}
+
+.settings-account-card > div + div {
+  border-top: 1px dotted var(--rule);
+}
+
+.settings-account-card dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-ink);
+  font-size: 0.57rem;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.settings-account-card dt svg {
+  width: 15px;
+  height: 15px;
+  color: var(--sage);
+  stroke-width: 1.5;
+}
+
+.settings-account-card dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-family: var(--journal-serif);
+  font-size: 0.84rem;
+  text-align: right;
+}
+
+.settings-account-card dd span {
+  color: var(--muted-ink);
+}
+
+.settings-page-footer {
+  margin-top: auto;
+  padding-top: 26px;
+  border-top: 1px dotted var(--rule-strong);
+}
+
+.settings-utilities {
+  justify-content: flex-start;
+  row-gap: 10px;
+}
+
+.settings-utilities > :first-child {
+  padding-left: 0;
+}
+
+.settings-page-footer > p {
+  margin: 14px 0 0;
+  color: var(--muted-ink);
+  font-family: var(--journal-serif);
+  font-size: 0.66rem;
+  font-style: italic;
+}
+
+.settings-page--danger {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-color: color-mix(in srgb, var(--rule-strong) 72%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
+.settings-page--danger::-webkit-scrollbar {
+  width: 7px;
+}
+
+.settings-page--danger::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--rule-strong) 72%, transparent);
+  background-clip: padding-box;
+}
+
+.settings-danger-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: clamp(18px, 2.8vh, 28px);
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.settings-danger-header > p {
+  margin: 0;
+  color: var(--danger);
+}
+
+.settings-danger-header > span {
+  padding: 0 8px 4px;
+  border-bottom: 1px solid var(--danger-border);
+  color: var(--muted-ink);
+  font-family: var(--journal-hand);
+  font-size: 0.72rem;
+  transform: rotate(1deg);
+}
+
+.settings-danger-content {
+  width: min(100%, 610px);
+  margin: clamp(36px, 5.5vh, 62px) auto 0;
+}
+
+.settings-danger-heading {
+  padding-left: clamp(16px, 2.2vw, 26px);
+  border-left: 3px solid var(--danger-border);
+}
+
+.settings-danger-number {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-danger-heading h2 {
+  margin: 0;
+  font-family: var(--journal-serif);
+  font-size: clamp(2rem, 3.4vw, 3.35rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+}
+
+.settings-danger-heading p {
+  max-width: 34rem;
+  margin: 15px 0 0;
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.delete-account-form {
+  display: grid;
+  gap: 18px;
+  margin-top: clamp(28px, 4.5vh, 44px);
+  padding: clamp(20px, 3vw, 30px);
+  border: 1px solid var(--danger-border);
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--danger-soft) 36%, var(--paper));
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    color-mix(in srgb, var(--danger-border) 22%, transparent) 32px,
+    transparent 33px
+  );
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+.delete-account-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px dotted var(--danger-border);
+}
+
+.delete-account-warning > svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-top: 1px;
+  color: var(--danger);
+  stroke-width: 1.6;
+}
+
+.delete-account-warning strong {
+  display: block;
+  color: var(--danger-foreground);
+  font-family: var(--journal-serif);
+  font-size: 0.93rem;
+}
+
+.delete-account-warning p {
+  margin: 5px 0 0;
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: 0.75rem;
+  line-height: 1.48;
+}
+
+.delete-account-field {
+  display: grid;
+  gap: 8px;
+}
+
+.delete-account-field label {
+  color: var(--muted-strong);
+  font-size: 0.59rem;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.delete-account-field label strong {
+  color: var(--danger-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.61rem;
+}
+
+.delete-account-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--rule-strong);
+  border-radius: 0;
+  outline: 0;
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  color: var(--ink);
+  font-family: var(--journal-serif);
+  font-size: 0.9rem;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.delete-account-field input::placeholder {
+  color: color-mix(in srgb, var(--muted-ink) 65%, transparent);
+}
+
+.delete-account-field input:focus {
+  border-color: var(--danger);
+  background: var(--paper);
+}
+
+.delete-account-acknowledgement {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted-strong);
+  cursor: pointer;
+  font-family: var(--journal-serif);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+.delete-account-acknowledgement input {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  margin: 0;
+  accent-color: var(--danger);
+  cursor: pointer;
+}
+
+.delete-account-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 2px solid var(--danger);
+  background: color-mix(in srgb, var(--danger-soft) 70%, transparent);
+  color: var(--danger-foreground);
+  font-family: var(--journal-serif);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.delete-account-submit {
+  display: inline-flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--danger-border);
+  border-radius: 3px;
+  background: var(--danger-soft);
+  color: var(--danger-foreground);
+  cursor: pointer;
+  font-family: var(--journal-serif);
+  font-size: 0.82rem;
+  font-weight: 650;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease, transform 120ms ease;
+}
+
+.delete-account-submit:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger-soft) 82%, var(--paper));
+  color: var(--danger);
+}
+
+.delete-account-submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.delete-account-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.delete-account-submit svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.7;
+}
+
+.settings-danger-note {
+  width: min(100%, 610px);
+  margin: auto auto 0;
+  padding-top: clamp(20px, 3vh, 30px);
+  color: var(--muted-ink);
+  font-family: var(--journal-serif);
+  font-size: 0.68rem;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: center;
+}
+
 @media (max-width: 1280px) {
   .journal-page {
     padding-inline: 32px;
@@ -1946,6 +2338,11 @@ select {
     height: 100dvh;
     max-height: 100dvh;
     overflow: hidden;
+  }
+
+  .settings-page--danger {
+    min-height: 100dvh;
+    overflow: visible;
   }
 
   .journal-entry-content {
@@ -2126,6 +2523,44 @@ select {
 
   .remove-hours-intro {
     margin-top: 70px;
+  }
+
+  .settings-intro {
+    margin-top: 64px;
+  }
+
+  .settings-title-row {
+    align-items: flex-start;
+  }
+
+  .settings-account-card {
+    margin-top: 38px;
+  }
+
+  .settings-account-card > div {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .settings-account-card dd {
+    padding-left: 23px;
+    text-align: left;
+  }
+
+  .settings-page-footer {
+    margin-top: 54px;
+  }
+
+  .settings-utilities > * {
+    padding-inline: 9px;
+  }
+
+  .settings-danger-content {
+    margin-top: 38px;
+  }
+
+  .delete-account-form {
+    padding: 20px 17px;
   }
 
   .remove-hours-title-row {
@@ -3308,6 +3743,523 @@ html[data-theme="dark"] .journal-auth-book {
   font-style: italic;
 }
 
+.journal-auth-privacy-acknowledgement {
+  display: grid;
+  gap: 8px;
+}
+
+.journal-auth-privacy-acknowledgement label {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 14px;
+  border: 1px dashed var(--rule-strong);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--paper-secondary) 54%, transparent);
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+
+.journal-auth-privacy-acknowledgement label:hover {
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--accent-soft) 54%, var(--paper));
+  color: var(--ink);
+}
+
+.journal-auth-privacy-acknowledgement label:has(input:checked) {
+  border-style: solid;
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--accent-soft) 76%, var(--paper));
+  color: var(--ink);
+}
+
+.journal-auth-privacy-acknowledgement input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin: 0;
+  appearance: none;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  background: var(--paper);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.journal-auth-privacy-acknowledgement input:checked {
+  border-color: var(--teal);
+  background: var(--teal);
+  box-shadow: inset 0 0 0 4px var(--paper);
+}
+
+.journal-auth-privacy-acknowledgement input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
+.journal-auth-privacy-acknowledgement p {
+  margin: 0 4px;
+  color: var(--muted-ink);
+  font-family: var(--journal-serif);
+  font-size: 0.65rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.journal-auth-privacy-acknowledgement a {
+  color: var(--teal);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+.journal-auth-privacy-acknowledgement a:hover {
+  color: var(--accent-hover);
+}
+
+.privacy-shell {
+  width: 100%;
+  min-height: 100svh;
+  color: var(--ink);
+  background-color: var(--desk-bg);
+  background-image:
+    radial-gradient(circle at 18% 20%, var(--desk-dot) 0 0.7px, transparent 0.8px),
+    radial-gradient(circle at 73% 64%, var(--desk-dot) 0 0.7px, transparent 0.8px);
+  background-size: 11px 11px, 17px 17px;
+}
+
+.privacy-topbar {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  padding-inline: clamp(18px, 2.6vw, 42px);
+  background: color-mix(in srgb, var(--desk-bg) 94%, transparent);
+}
+
+.privacy-home-link {
+  gap: 7px;
+}
+
+.privacy-home-link svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.7;
+}
+
+.privacy-stage {
+  padding: clamp(10px, 2vw, 24px);
+}
+
+.privacy-paper {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  overflow: hidden;
+  padding: clamp(34px, 6vw, 76px) clamp(22px, 6vw, 78px) 28px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 5px 18px 18px 5px;
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle at 20% 17%, var(--paper-grain) 0 0.7px, transparent 0.8px),
+    radial-gradient(circle at 77% 68%, var(--paper-grain) 0 0.7px, transparent 0.8px),
+    linear-gradient(90deg, color-mix(in srgb, var(--paper-secondary) 48%, transparent), transparent 8%);
+  background-size: 8px 9px, 13px 15px, 100% 100%;
+  box-shadow: var(--journal-shadow);
+}
+
+.privacy-paper::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: clamp(10px, 1.8vw, 24px);
+  width: 1px;
+  background: color-mix(in srgb, var(--orange) 36%, transparent);
+  box-shadow: 4px 0 11px rgba(69, 54, 34, 0.06);
+}
+
+.privacy-heading {
+  max-width: 790px;
+  padding-bottom: clamp(32px, 5vw, 56px);
+}
+
+.privacy-imprint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 38px;
+  color: var(--muted-strong);
+  font-size: 0.63rem;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.privacy-imprint svg {
+  width: 18px;
+  height: 18px;
+  color: var(--sage);
+  stroke-width: 1.5;
+}
+
+.privacy-kicker {
+  margin: 0 0 10px;
+  color: var(--teal);
+  font-size: 0.65rem;
+  font-weight: 750;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.privacy-heading h1 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--journal-serif);
+  font-size: clamp(2.8rem, 7vw, 5.7rem);
+  font-weight: 500;
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+}
+
+.privacy-lede {
+  max-width: 710px;
+  margin: 23px 0 0;
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: clamp(0.98rem, 1.8vw, 1.14rem);
+  line-height: 1.72;
+}
+
+.privacy-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 34px;
+  margin: 29px 0 0;
+}
+
+.privacy-dates div {
+  display: grid;
+  gap: 3px;
+}
+
+.privacy-dates dt {
+  color: var(--muted-ink);
+  font-size: 0.58rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.privacy-dates dd {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--journal-serif);
+  font-size: 0.82rem;
+}
+
+.privacy-at-a-glance {
+  margin-bottom: clamp(46px, 7vw, 72px);
+  padding: clamp(22px, 3vw, 32px);
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+  background: color-mix(in srgb, var(--paper-secondary) 62%, transparent);
+}
+
+.privacy-at-a-glance h2 {
+  margin: 0 0 15px;
+  color: var(--ink);
+  font-family: var(--journal-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.privacy-at-a-glance ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px 34px;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.privacy-at-a-glance li::marker,
+.privacy-content li::marker {
+  color: var(--teal);
+}
+
+.privacy-layout {
+  display: grid;
+  grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
+  gap: clamp(42px, 7vw, 92px);
+  align-items: start;
+}
+
+.privacy-contents {
+  position: sticky;
+  top: 22px;
+}
+
+.privacy-contents > p {
+  margin: 0 0 14px;
+  color: var(--muted-ink);
+  font-size: 0.59rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.privacy-contents ol {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.privacy-contents a {
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr);
+  gap: 8px;
+  padding: 7px 4px;
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: 0.72rem;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.privacy-contents a span {
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+}
+
+.privacy-contents a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 3px;
+}
+
+.privacy-content {
+  min-width: 0;
+}
+
+.privacy-content > section {
+  scroll-margin-top: 24px;
+  padding: 0 0 clamp(42px, 6vw, 62px);
+}
+
+.privacy-content > section + section {
+  padding-top: clamp(36px, 5vw, 50px);
+  border-top: 1px dotted var(--rule-strong);
+}
+
+.privacy-section-number {
+  margin: 0 0 8px;
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-size: 0.61rem;
+  letter-spacing: 0.08em;
+}
+
+.privacy-content h2 {
+  margin: 0 0 22px;
+  color: var(--ink);
+  font-family: var(--journal-serif);
+  font-size: clamp(1.55rem, 3.2vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.privacy-content h3 {
+  margin: 28px 0 9px;
+  color: var(--ink);
+  font-family: var(--journal-serif);
+  font-size: 1.02rem;
+  font-weight: 650;
+}
+
+.privacy-content p,
+.privacy-content li {
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: 0.89rem;
+  line-height: 1.72;
+}
+
+.privacy-content p {
+  margin: 0 0 16px;
+}
+
+.privacy-content ul {
+  display: grid;
+  gap: 8px;
+  margin: 13px 0 20px;
+  padding-left: 1.3rem;
+}
+
+.privacy-content strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.privacy-content a {
+  color: var(--teal);
+  font-weight: 650;
+  text-underline-offset: 3px;
+}
+
+.privacy-content a:hover {
+  color: var(--accent-hover);
+}
+
+.privacy-content code {
+  margin-inline: 0.2em;
+  padding: 0.12rem 0.3rem;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper-secondary);
+  color: var(--ink);
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+.privacy-table-wrap {
+  width: 100%;
+  margin: 24px 0;
+  overflow-x: auto;
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.privacy-table-wrap table {
+  width: 100%;
+  min-width: 660px;
+  border-collapse: collapse;
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.privacy-table-wrap caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.privacy-table-wrap th,
+.privacy-table-wrap td {
+  padding: 15px 14px;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.privacy-table-wrap tr:last-child th,
+.privacy-table-wrap tr:last-child td {
+  border-bottom: 0;
+}
+
+.privacy-table-wrap thead th {
+  color: var(--muted-ink);
+  font-family: var(--font-sans);
+  font-size: 0.56rem;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.privacy-table-wrap tbody th {
+  width: 23%;
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.privacy-table-wrap td:nth-child(2) {
+  width: 27%;
+}
+
+.privacy-table-wrap a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.privacy-table-wrap a svg,
+.privacy-contact-link svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  stroke-width: 1.7;
+}
+
+.privacy-right-to-object {
+  margin-top: 24px;
+  padding: 17px 19px;
+  border-left: 3px solid var(--teal);
+  background: color-mix(in srgb, var(--accent-soft) 58%, transparent);
+  color: var(--muted-strong);
+  font-family: var(--journal-serif);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.privacy-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+  font-family: var(--journal-serif);
+}
+
+.privacy-footer {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 8px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule-strong);
+  color: var(--muted-ink);
+  font-family: var(--journal-serif);
+  font-size: 0.72rem;
+}
+
+.privacy-footer svg {
+  width: 17px;
+  height: 17px;
+  color: var(--sage);
+  stroke-width: 1.5;
+}
+
+.privacy-footer a {
+  margin-left: auto;
+  color: var(--teal);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+.privacy-footer a:hover {
+  color: var(--accent-hover);
+}
+
 .journal-not-found {
   --back-cover: #234144;
   --back-cover-deep: #153033;
@@ -3651,6 +4603,24 @@ html[data-theme="dark"] .journal-back-cover {
   stroke-width: 1.4;
 }
 
+@media (max-width: 900px) {
+  .privacy-layout {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .privacy-contents {
+    position: static;
+    padding-bottom: 25px;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .privacy-contents ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3px 24px;
+  }
+}
+
 @media (max-height: 800px) and (min-width: 681px) {
   .journal-auth-page {
     padding-top: 24px;
@@ -3694,6 +4664,41 @@ html[data-theme="dark"] .journal-back-cover {
 
   .journal-auth-shell {
     padding-inline: 0;
+  }
+
+  .privacy-stage {
+    padding: 8px;
+  }
+
+  .privacy-paper {
+    padding: 30px 22px 22px 27px;
+    border-radius: 4px 14px 14px 4px;
+  }
+
+  .privacy-paper::before {
+    left: 12px;
+  }
+
+  .privacy-imprint {
+    margin-bottom: 28px;
+  }
+
+  .privacy-at-a-glance ul {
+    grid-template-columns: 1fr;
+  }
+
+  .privacy-contents ol {
+    grid-template-columns: 1fr;
+  }
+
+  .privacy-footer {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .privacy-footer a {
+    width: 100%;
+    margin: 5px 0 0 26px;
   }
 
   .not-found-stage {
@@ -3897,6 +4902,21 @@ html[data-theme="dark"] .journal-back-cover {
 
   .journal-auth-cover-link span {
     display: none;
+  }
+
+  .privacy-home-link {
+    min-width: 34px;
+    padding-inline: 9px;
+  }
+
+  .privacy-home-link span {
+    display: none;
+  }
+
+  .privacy-dates {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 13px;
   }
 
   .cover-inner-frame {

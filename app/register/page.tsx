@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Lock, Mail, UserPlus } from "lucide-react";
@@ -12,6 +13,7 @@ const registerErrorMessages: Record<string, string> = {
   missing_fields: "Enter both an email address and a password to create your account.",
   invalid_email: "Enter a valid email address.",
   invalid_password: "Choose a password between 8 and 72 characters long.",
+  privacy_required: "Acknowledge the Privacy Policy before creating your account.",
   account_exists: "An account with that email address already exists.",
 };
 
@@ -48,6 +50,7 @@ export default async function RegisterPage({
 
     const emailValue = formData.get("email");
     const passwordValue = formData.get("password");
+    const privacyAcknowledgement = formData.get("privacyAcknowledgement");
     const email =
       typeof emailValue === "string" ? emailValue.trim().toLowerCase() : "";
     const password = typeof passwordValue === "string" ? passwordValue : "";
@@ -63,6 +66,10 @@ export default async function RegisterPage({
 
     if (password.length < 8 || password.length > 72) {
       redirect("/register?error=invalid_password");
+    }
+
+    if (privacyAcknowledgement !== "acknowledged") {
+      redirect("/register?error=privacy_required");
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -152,6 +159,24 @@ export default async function RegisterPage({
           <span id="register-password-hint" className="journal-auth-hint">
             Use 8–72 characters.
           </span>
+        </div>
+
+        <div className="journal-auth-privacy-acknowledgement">
+          <label htmlFor="privacy-acknowledgement">
+            <input
+              id="privacy-acknowledgement"
+              name="privacyAcknowledgement"
+              type="checkbox"
+              value="acknowledged"
+              aria-describedby="privacy-acknowledgement-details"
+              required
+            />
+            <span>I have read and acknowledge the Privacy Policy.</span>
+          </label>
+          <p id="privacy-acknowledgement-details">
+            Review the <Link href="/privacy">Privacy Policy</Link> to learn how we
+            collect data, use AI-assisted tools, and work with service providers.
+          </p>
         </div>
 
         <DotBorderButton

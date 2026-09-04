@@ -9,7 +9,7 @@ import type {
   StudyCalendarData,
   StudyChartData,
 } from "@/lib/study-session-data";
-import { LogOut, Sprout, Trash2 } from "lucide-react";
+import { LogOut, Settings2, Sprout, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 export type PreviousJournalSession = {
@@ -74,6 +74,10 @@ export default function StudyJournal({
                   <Trash2 aria-hidden="true" />
                   Remove Hours
                 </JournalPageTurnLink>
+                <Link href="/settings" className="journal-utility">
+                  <Settings2 aria-hidden="true" />
+                  Settings
+                </Link>
                 <form
                   action={async () => {
                     "use server";
@@ -105,6 +109,7 @@ export default function StudyJournal({
 
             <footer className="journal-colophon">
               <span>Notes become progress.</span>
+              <Link href="/privacy">Privacy Policy</Link>
               <a href="https://aryamaan-dash.vercel.app/" target="_blank" rel="noreferrer">
                 Made by Aryamaan Dash
               </a>

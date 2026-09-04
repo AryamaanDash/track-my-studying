@@ -2,7 +2,8 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
-import { auth } from "../auth";
+import bcrypt from "bcryptjs";
+import { auth, signOut } from "../auth";
 import { prisma } from "../lib/prisma";
 import { getStudyDataCacheTag } from "../lib/study-cache";
 
@@ -101,4 +102,63 @@ export async function deleteSession(id: string) {
   updateTag(getStudyDataCacheTag(userId));
   revalidatePath("/dashboard");
   revalidatePath("/remove-hours");
+}
+
+export type DeleteAccountState = {
+  attempt: number;
+  error?: string;
+};
+
+export async function deleteAccount(
+  previousState: DeleteAccountState,
+  formData: FormData
+): Promise<DeleteAccountState> {
+  const userId = await getCurrentUserIdOrThrow();
+  const fail = (error: string): DeleteAccountState => ({
+    attempt: previousState.attempt + 1,
+    error,
+  });
+  const passwordValue = formData.get("password");
+  const password = typeof passwordValue === "string" ? passwordValue : "";
+  const confirmation = getFormString(formData, "confirmation");
+  const acknowledgement = getFormString(formData, "acknowledgement");
+
+  if (confirmation !== "DELETE") {
+    return fail("Type DELETE exactly as shown to confirm.");
+  }
+
+  if (acknowledgement !== "understood") {
+    return fail("Confirm that you understand this action is permanent.");
+  }
+
+  if (!password) {
+    return fail("Enter your password to continue.");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { passwordHash: true },
+  });
+
+  if (!user?.passwordHash) {
+    return fail("We could not verify this account. Please sign in again.");
+  }
+
+  const passwordsMatch = await bcrypt.compare(password, user.passwordHash);
+
+  if (!passwordsMatch) {
+    return fail("That password does not match your account.");
+  }
+
+  const { count } = await prisma.user.deleteMany({
+    where: { id: userId },
+  });
+
+  if (count === 0) {
+    return fail("This account could not be found. Please sign in again.");
+  }
+
+  await signOut({ redirectTo: "/" });
+
+  return { attempt: previousState.attempt + 1 };
 }

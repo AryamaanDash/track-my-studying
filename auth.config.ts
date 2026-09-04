@@ -17,7 +17,8 @@ export const authConfig = {
       const isLoggedIn = !!auth?.user;
       const isProtectedPage =
         nextUrl.pathname.startsWith("/dashboard") ||
-        nextUrl.pathname.startsWith("/remove-hours");
+        nextUrl.pathname.startsWith("/remove-hours") ||
+        nextUrl.pathname.startsWith("/settings");
       if (isProtectedPage) return isLoggedIn;
       return true;
     },
