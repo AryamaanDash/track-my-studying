@@ -152,6 +152,7 @@ html[data-theme="dark"] {
 
 html {
   background: var(--background);
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -712,7 +713,6 @@ select {
 .previous-entry {
   margin-top: auto;
   padding-top: clamp(16px, 2.5vh, 32px);
-  border-top: 1px dotted var(--rule-strong);
 }
 
 .previous-entry-note {
@@ -1454,6 +1454,14 @@ select {
 
 .remove-hours-page--history {
   overflow: hidden;
+}
+
+.study-history-dashboard-link {
+  align-self: flex-end;
+  margin-bottom: 18px;
+  padding: 9px 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
 }
 
 .study-history-header {

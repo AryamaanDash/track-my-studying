@@ -146,6 +146,13 @@ export default async function RemoveHoursPage({
           className="journal-page journal-page--right remove-hours-page remove-hours-page--history"
           aria-labelledby="study-history-title"
         >
+          <Link
+            href="/dashboard"
+            className="journal-utility study-history-dashboard-link"
+          >
+            <ArrowLeft aria-hidden="true" />
+            Back to dashboard
+          </Link>
           <header className="study-history-header">
             <div>
               <p>Recorded sessions</p>
@@ -246,6 +253,14 @@ export default async function RemoveHoursPage({
               </div>
             </nav>
           ) : null}
+
+          <footer className="journal-colophon">
+            <span>Notes become progress.</span>
+            <Link href="/privacy">Privacy Policy</Link>
+            <a href="https://aryamaan-dash.vercel.app/" target="_blank" rel="noreferrer">
+              Made by Aryamaan Dash
+            </a>
+          </footer>
         </section>
       </main>
     </div>
