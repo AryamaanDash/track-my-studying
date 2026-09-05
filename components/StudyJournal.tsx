@@ -9,7 +9,7 @@ import type {
   StudyCalendarData,
   StudyChartData,
 } from "@/lib/study-session-data";
-import { FilePenLine, LogOut, Settings2, Sprout } from "lucide-react";
+import { BookOpenText, FilePenLine, LogOut, Settings2, Sprout } from "lucide-react";
 import Link from "next/link";
 
 export type PreviousJournalSession = {
@@ -70,6 +70,10 @@ export default function StudyJournal({
             <header className="journal-right-header">
               <nav className="journal-utilities" aria-label="Journal utilities">
                 <ThemeSelector />
+                <Link href="/weekly-reflection" className="journal-utility">
+                  <BookOpenText aria-hidden="true" />
+                  Weekly Reflection
+                </Link>
                 <JournalPageTurnLink href="/remove-hours" className="journal-utility">
                   <FilePenLine aria-hidden="true" />
                   Edit Hours
