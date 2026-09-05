@@ -5235,3 +5235,76 @@ html[data-theme="dark"] .journal-back-cover {
 .focus-timer-dialog input[readonly] { color: var(--muted-ink); cursor: default; }
 .focus-timer button:focus-visible,
 .focus-timer-dialog button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* Weekly reflections share the journal's paper, ink, and writing controls. */
+.reflection-context,
+.reflection-writing {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.reflection-intro { margin-top: clamp(32px, 6vh, 72px); }
+.reflection-week-picker { margin: 28px 0; }
+.reflection-week-picker label,
+.reflection-history h2 {
+  display: block;
+  margin: 0 0 12px;
+  font-family: var(--journal-serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.reflection-week-picker > div { display: flex; align-items: center; gap: 12px; }
+.reflection-week-picker input { min-width: 0; flex: 1; }
+.reflection-week-picker button { flex: none; min-height: 42px; padding: 10px 14px; border-radius: 3px; cursor: pointer; }
+.reflection-week-picker p,
+.reflection-history > p,
+.reflection-save-row > span,
+.reflection-save-status {
+  color: var(--muted-ink);
+  font-family: var(--journal-serif);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.reflection-week-picker p { margin-top: 8px; }
+.reflection-history { border-top: 1px solid var(--rule); padding-top: 20px; margin-bottom: 28px; }
+.reflection-history ul { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.reflection-history a { color: var(--muted-strong); font-family: var(--journal-serif); font-size: 0.85rem; text-underline-offset: 4px; }
+.reflection-history a[aria-current="page"] { color: var(--ink); font-weight: 700; text-decoration: underline; }
+.reflection-history li > a { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--rule); border-radius: 3px; text-decoration: none; }
+.reflection-history li > a:hover,
+.reflection-history li > a[aria-current="page"] { border-color: var(--teal); background: var(--paper-secondary); text-decoration: none; }
+.reflection-history-preview { color: var(--muted-ink); font-size: 0.75rem; font-weight: 400; line-height: 1.45; overflow-wrap: anywhere; white-space: pre-line; }
+.reflection-history-open { color: var(--teal); font-size: 0.7rem; font-weight: 400; }
+.reflection-archive-navigation,
+.reflection-saved-navigation { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.reflection-archive-navigation:not(:empty) { margin-top: 18px; }
+.reflection-saved-navigation { padding-bottom: 18px; margin-bottom: 22px; border-bottom: 1px solid var(--rule); }
+.reflection-archive-navigation a,
+.reflection-saved-navigation a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; color: var(--muted-strong); font-family: var(--journal-serif); font-size: 0.8rem; text-underline-offset: 4px; }
+.reflection-archive-navigation svg,
+.reflection-saved-navigation svg { width: 14px; height: 14px; flex: none; }
+.reflection-context-bottom { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: auto; padding-top: 20px; }
+.reflection-writing > * { flex-shrink: 0; }
+.reflection-writing-header h2 { margin: 8px 0 24px; font-family: var(--journal-serif); font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 500; }
+.reflection-form { display: grid; gap: 22px; padding-bottom: 24px; }
+.reflection-entry label { display: flex; gap: 12px; align-items: baseline; font-family: var(--journal-serif); font-size: 1.15rem; }
+.reflection-entry label span { color: var(--teal); font-family: var(--journal-hand); font-size: 0.8rem; }
+.reflection-entry > p { margin: 7px 0 12px; color: var(--muted-ink); font-family: var(--journal-serif); font-size: 0.78rem; line-height: 1.5; }
+.reflection-entry textarea { min-height: 120px; resize: vertical; }
+.reflection-entry textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.reflection-save-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.reflection-save-row button { min-height: 42px; padding: 10px 18px; cursor: pointer; }
+.reflection-save-row button:disabled { cursor: wait; opacity: 0.65; }
+.reflection-save-status { margin: 0; }
+.reflection-save-status:empty { display: none; }
+
+@media (max-width: 1100px) {
+  .reflection-desk { height: auto; min-height: 100dvh; overflow: visible; }
+  .reflection-journal { height: auto; min-height: 100dvh; grid-template-columns: minmax(0, 1fr); overflow: visible; }
+  .reflection-journal::before { display: none; }
+  .reflection-context,
+  .reflection-writing { min-height: 0; overflow: visible; }
+  .reflection-context { border-radius: 16px 16px 0 0; }
+  .reflection-writing { border-radius: 0 0 16px 16px; }
+  .reflection-history ul { max-height: 180px; overflow-y: auto; }
+}

@@ -25,6 +25,7 @@ model User {
   authenticator Authenticator[]
 
   studySessions StudySession[]  
+  weeklyReflections WeeklyReflection[]
 
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -101,4 +102,18 @@ model StudySession {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, date])
+}
+
+model WeeklyReflection {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart  DateTime @db.Date
+  worked     String   @default("")
+  difficult  String   @default("")
+  priorities String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, weekStart])
 }
