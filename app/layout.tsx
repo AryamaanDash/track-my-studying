@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { Suspense } from "react";
 import "./globals.css";
@@ -35,6 +36,7 @@ export default function RootLayout({
             })();
           `}
         </Script>
+        <Analytics />
       </body>
     </html>
   );

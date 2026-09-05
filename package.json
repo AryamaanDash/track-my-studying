@@ -27,6 +27,7 @@
     "@auth/prisma-adapter": "^2.11.2",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/functions": "^3.9.5",
     "bcryptjs": "^3.0.3",
     "lucide-react": "^1.8.0",
