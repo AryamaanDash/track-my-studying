@@ -23,7 +23,7 @@ if (result.error) {
 }
 
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-const child = spawn(npmCommand, ["run", packageScript], {
+const child = spawn(npmCommand, ["run", packageScript, "--", ...process.argv.slice(3)], {
   env: { ...process.env, ...dockerEnvironment },
   stdio: "inherit",
 });

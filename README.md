@@ -1,153 +1,71 @@
 # Track My Studying
 
 A Next.js application for recording study sessions, journal entries, and study
-progress. PostgreSQL stores application and authentication data, and Prisma
-manages the database schema.
+progress. PostgreSQL stores application and authentication data; Prisma manages
+the database schema.
 
-## Fully containerized setup
+## Local development
 
-Docker Compose can run the complete application without installing Node.js or
-PostgreSQL on your computer. The stack contains three services:
+Requires Node.js 22 and Docker with Docker Compose supporting `--wait`.
+Compose runs PostgreSQL 17; Next.js and Prisma run on your computer.
 
-- `postgres` stores application and authentication data in a persistent volume.
-- `migrate` applies Prisma migrations and exits successfully before the app starts.
-- `app` runs the optimized Next.js production server as a non-root user.
-
-### Prerequisites
-
-- Docker Desktop or another Docker Engine with Docker Compose
-
-### 1. Configure authentication
-
-If you do not already have a `.env` file, create one from the example:
+1. Install dependencies with `npm ci`.
+2. If `.env` does not exist, copy `.env.example` to `.env`. Generate a secret
+   with `openssl rand -base64 32` and set `AUTH_SECRET` in `.env` (or your existing
+   host environment file).
+3. Copy `.env.docker.example` to `.env.docker.local` if it does not exist.
+4. Start the database, apply committed migrations, and start Next.js:
 
 ```bash
-cp .env.example .env
-```
-
-Generate a secret with `openssl rand -base64 32` and use it as the
-`AUTH_SECRET` value in `.env`. Compose requires this value but supplies its own
-internal database URL, so it will not use a hosted database URL from `.env`.
-Existing `NEXTAUTH_SECRET` and `BETTER_AUTH_SECRET` values are also supported.
-
-### 2. Build and start the complete stack
-
-```bash
-docker compose up --build --wait
-```
-
-This builds the application image, starts PostgreSQL, applies migrations, and
-waits for the app health check. Open [http://localhost:3000](http://localhost:3000).
-If port 3000 is already in use, add `APP_PORT=3001` to `.env` and open port 3001
-instead.
-
-If Node.js is installed, `npm run docker:up` is an equivalent shortcut.
-
-Check the containers or follow the application logs with:
-
-```bash
-docker compose ps
-docker compose logs --follow app
-```
-
-### Stopping the stack
-
-```bash
-docker compose down
-```
-
-The equivalent npm shortcuts are `npm run docker:logs` and
-`npm run docker:down`.
-
-The PostgreSQL data remains in the named volume
-`track-my-studying_postgres_data`. Running `docker compose down --volumes`
-also deletes that volume and permanently removes the local records.
-
-## Faster local development
-
-On macOS and Windows, Next.js Fast Refresh is faster when Node.js runs directly
-on the computer. This optional workflow containerizes only PostgreSQL while the
-development server runs on the host.
-
-### Prerequisites
-
-- Node.js 22
-- Docker Desktop or another Docker Engine with Docker Compose
-
-### 1. Install dependencies
-
-```bash
-npm ci
-```
-
-### 2. Start PostgreSQL
-
-```bash
-docker compose up -d --wait postgres
-```
-
-The database is exposed only on `localhost:5432`. Its data uses the same named
-volume as the fully containerized stack.
-
-### 3. Configure the development server
-
-Create the ignored local-Docker environment file:
-
-```bash
-cp .env.docker.example .env.docker.local
-```
-
-The included values point every supported database URL variable at the local
-container. Authentication settings continue to come from the standard `.env`
-files. This avoids overwriting an existing `.env` that may point at a hosted
-database.
-
-If you do not already have a standard `.env`, copy `.env.example` to `.env` and
-generate an Auth.js secret using:
-
-```bash
-openssl rand -base64 32
-```
-
-The local database URL is:
-
-```dotenv
-DATABASE_URL="postgresql://track_my_studying:local_development_password@localhost:5432/track_my_studying?sslmode=disable"
-```
-
-The password is intentionally a local-development credential. Do not use it
-for a public or production database.
-
-### 4. Apply database migrations
-
-```bash
+npm run docker:up
+npm run db:generate
 npm run db:migrate:docker
-```
-
-This creates the tables defined by Prisma and records which migrations have
-already run.
-
-### 5. Start the development server
-
-```bash
 npm run dev:docker
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). `docker:up` waits for the
+PostgreSQL health check. The database binds only to `127.0.0.1:5432`; free that
+port if another PostgreSQL instance uses it.
 
-These two `:docker` scripts load `.env.docker.local` and explicitly give its
-values priority before Next.js or Prisma starts. The regular `npm run dev`
-command is unchanged and continues to use the project's standard `.env*` files.
+The `:docker` commands give `.env.docker.local` priority over existing database
+variables, including provider aliases, so a hosted URL in your standard `.env*`
+files does not redirect local development or migrations. Keep every URL in
+`.env.docker.local` pointed at the local database. Regular `npm run dev` and
+`npm run db:migrate:deploy` keep using their existing environment configuration.
 
-### Stopping PostgreSQL
+## Prisma migrations
+
+Apply committed migrations with `npm run db:migrate:docker`. After editing
+`prisma/schema.prisma`, create and apply a migration against the local database:
 
 ```bash
-docker compose down
+npm run db:migrate:dev:docker -- --name describe_change
+npm run db:generate
 ```
 
-This stops and removes the container but preserves its named volume. To delete
-the database data too, run `docker compose down --volumes`. That second command
-is destructive and cannot recover the local records afterward.
+Commit the generated `prisma/migrations` files. Local PostgreSQL permits Prisma
+to create its shadow database for `migrate dev`. Use `db:migrate:deploy` with a
+direct/non-pooled connection when deploying committed migrations elsewhere.
+
+## Containers and data
+
+```bash
+docker compose ps
+npm run docker:logs
+npm run docker:down
+```
+
+Stopping or recreating PostgreSQL preserves the named volume
+`track-my-studying_postgres_data`. To deliberately erase **all local database
+data**, run `docker compose down --volumes`. Changing PostgreSQL initialization
+credentials does not update an existing volume. Back up data before a major
+PostgreSQL version upgrade.
+
+Compose passes only public local-development database credentials into
+PostgreSQL. Auth secrets and hosted credentials stay on the host: no `.env`
+file is mounted or passed via `env_file`, and no app image is built by Compose.
+Local `.env*` files are ignored by Git and excluded from Docker builds. Never
+reuse the example database password for a public or production database.
 
 ## Useful checks
 
@@ -158,5 +76,5 @@ npm run typecheck
 npm run build:app
 ```
 
-`npm run build:app` builds the application without trying to deploy database
-migrations during the image-build step.
+`build:app` builds without deploying migrations. `build` also applies migrations
+using the configured database connection.

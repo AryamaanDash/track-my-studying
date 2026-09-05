@@ -3,10 +3,13 @@ name: track-my-studying
 services:
   postgres:
     image: postgres:17-alpine
+    # Public local-only credentials; never use these for a hosted database.
     environment:
       POSTGRES_DB: track_my_studying
       POSTGRES_USER: track_my_studying
       POSTGRES_PASSWORD: local_development_password
+    restart: unless-stopped
+    stop_grace_period: 30s
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -19,44 +22,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5s
-
-  migrate:
-    build:
-      context: .
-      target: migrations
-    environment:
-      DATABASE_URL: postgresql://track_my_studying:local_development_password@postgres:5432/track_my_studying?sslmode=disable
-      DIRECT_URL: postgresql://track_my_studying:local_development_password@postgres:5432/track_my_studying?sslmode=disable
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: "no"
-
-  app:
-    build:
-      context: .
-      target: runner
-    environment:
-      AUTH_SECRET: ${AUTH_SECRET:-${NEXTAUTH_SECRET:-${BETTER_AUTH_SECRET:?Set AUTH_SECRET in your .env file}}}
-      DATABASE_URL: postgresql://track_my_studying:local_development_password@postgres:5432/track_my_studying?sslmode=disable
-      PGPOOL_MAX: 5
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-    init: true
-    ports:
-      - "127.0.0.1:${APP_PORT:-3000}:3000"
-    restart: unless-stopped
-    healthcheck:
-      test:
-        - CMD
-        - node
-        - -e
-        - fetch('http://127.0.0.1:3000').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
 
 volumes:
   postgres_data:

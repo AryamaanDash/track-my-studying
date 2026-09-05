@@ -8,9 +8,9 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:docker": "node scripts/run-with-docker-env.mjs dev",
-    "docker:up": "docker compose up --build --wait",
+    "docker:up": "docker compose up -d --wait postgres",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs --follow app",
+    "docker:logs": "docker compose logs --follow postgres",
     "build": "node scripts/require-auth-secret.mjs && prisma generate && node scripts/require-database-url.mjs && prisma migrate deploy && next build",
     "build:app": "prisma generate && next build",
     "start": "next start",
@@ -19,7 +19,9 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate:deploy": "node scripts/require-database-url.mjs && prisma migrate deploy",
-    "db:migrate:docker": "node scripts/run-with-docker-env.mjs db:migrate:deploy"
+    "db:migrate:docker": "node scripts/run-with-docker-env.mjs db:migrate:deploy",
+    "db:migrate:dev": "node scripts/require-database-url.mjs && prisma migrate dev",
+    "db:migrate:dev:docker": "node scripts/run-with-docker-env.mjs db:migrate:dev"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
