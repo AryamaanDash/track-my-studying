@@ -1,3 +1,4 @@
+import FocusTimer from "@/components/FocusTimer";
 import { addStudySession } from "@/app/actions";
 import StudySessionDateInput from "@/components/StudySessionDateInput";
 import DotBorderButton from "@/components/ui/dot-border-button";
@@ -103,6 +104,8 @@ export default function StudyEntryPanel({
           Your saved sessions will appear in your journal and analytics.
         </p>
       </form>
+
+      <FocusTimer />
 
       <section className="previous-entry" aria-labelledby="previous-entry-heading">
         <h3 id="previous-entry-heading">Previous entry</h3>
