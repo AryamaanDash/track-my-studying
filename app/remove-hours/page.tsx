@@ -1,3 +1,5 @@
+import ResponsiveStudyNotebook from "@/components/ResponsiveStudyNotebook";
+import MobileNotebookUtilities from "@/components/MobileNotebookUtilities";
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -77,10 +79,16 @@ export default async function RemoveHoursPage({
     : undefined;
 
   return (
-    <div className="journal-desk remove-hours-desk">
-      <main className="study-journal remove-hours-journal">
+    <ResponsiveStudyNotebook
+      deskClassName="remove-hours-desk"
+      journalClassName="remove-hours-journal"
+      leftLabel="Overview"
+      rightLabel="History"
+      leftPageId="remove-hours-left-page"
+      rightPageId="remove-hours-right-page"
+    >
         <section
-          className="journal-page journal-page--left remove-hours-page remove-hours-page--context"
+          id="remove-hours-left-page" className="journal-page journal-page--left remove-hours-page remove-hours-page--context"
           aria-labelledby="remove-hours-title"
         >
           <header className="journal-brand">
@@ -90,6 +98,7 @@ export default async function RemoveHoursPage({
               <p>Personal Study Journal</p>
             </div>
           </header>
+          <MobileNotebookUtilities />
 
           <div className="remove-hours-intro">
             <p className="remove-hours-eyebrow">A small correction</p>
@@ -118,7 +127,7 @@ export default async function RemoveHoursPage({
 
           <footer className="remove-hours-context-footer">
             <nav
-              className="journal-utilities remove-hours-utilities"
+              className="journal-utilities remove-hours-utilities journal-desktop-utilities"
               aria-label="Journal utilities"
             >
               <Link href="/dashboard" className="journal-utility">
@@ -143,12 +152,13 @@ export default async function RemoveHoursPage({
         </section>
 
         <section
-          className="journal-page journal-page--right remove-hours-page remove-hours-page--history"
+          id="remove-hours-right-page" className="journal-page journal-page--right remove-hours-page remove-hours-page--history"
           aria-labelledby="study-history-title"
         >
+          <MobileNotebookUtilities />
           <Link
             href="/dashboard"
-            className="journal-utility study-history-dashboard-link"
+            className="journal-utility study-history-dashboard-link journal-desktop-utilities"
           >
             <ArrowLeft aria-hidden="true" />
             Back to dashboard
@@ -262,7 +272,6 @@ export default async function RemoveHoursPage({
             </a>
           </footer>
         </section>
-      </main>
-    </div>
+    </ResponsiveStudyNotebook>
   );
 }

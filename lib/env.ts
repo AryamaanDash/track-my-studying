@@ -42,9 +42,3 @@ export function runtimeDatabaseUrlErrorMessage() {
     ", "
   )}.`;
 }
-
-export function migrationDatabaseUrlErrorMessage() {
-  return `Missing database connection string for Prisma migrations. Set one of: ${migrationDatabaseUrlKeys.join(
-    ", "
-  )}.`;
-}

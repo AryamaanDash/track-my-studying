@@ -57,9 +57,7 @@ export default function StudyCharts({ initialData }: { initialData: StudyChartDa
   const [view, setView] = useState<ChartView | null>(null);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
-  const cachedData = useRef(
-    new Map<StudyTimeframe, StudyChartData>([["month", initialData]])
-  );
+  const cachedData = useRef(new Map<StudyTimeframe, StudyChartData>());
   const activeRequest = useRef<AbortController | null>(null);
   const timeframe = view?.timeframe ?? "month";
   const data = view?.data ?? (view ? emptyChartData : initialData);

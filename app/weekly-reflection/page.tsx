@@ -1,3 +1,5 @@
+import ResponsiveStudyNotebook from "@/components/ResponsiveStudyNotebook";
+import MobileNotebookUtilities from "@/components/MobileNotebookUtilities";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -51,13 +53,20 @@ export default async function WeeklyReflectionPage({ searchParams }: {
   const reflectionHref = (date: Date) => `/weekly-reflection?week=${date.toISOString().slice(0, 10)}${before ? `&before=${before}` : ""}`;
 
   return (
-    <div className="journal-desk reflection-desk">
-      <main className="study-journal reflection-journal">
-        <section className="journal-page journal-page--left reflection-context" aria-labelledby="reflection-title">
+    <ResponsiveStudyNotebook
+      deskClassName="reflection-desk"
+      journalClassName="reflection-journal"
+      leftLabel="Weeks"
+      rightLabel="Reflection"
+      leftPageId="reflection-left-page"
+      rightPageId="reflection-right-page"
+    >
+        <section id="reflection-left-page" className="journal-page journal-page--left reflection-context" aria-labelledby="reflection-title">
           <header className="journal-brand">
             <Sprout aria-hidden="true" />
             <div><Link href="/dashboard">Track My Studying</Link><p>Personal Study Journal</p></div>
           </header>
+          <MobileNotebookUtilities />
           <div className="reflection-intro">
             <p className="remove-hours-eyebrow">Pause. Notice. Begin again.</p>
             <div className="remove-hours-title-row"><h1 id="reflection-title">Weekly Reflection</h1><BookOpenText aria-hidden="true" /></div>
@@ -80,10 +89,11 @@ export default async function WeeklyReflectionPage({ searchParams }: {
               {hasOlder && <Link href={`/weekly-reflection?week=${week}&before=${history[history.length - 1].weekStart.toISOString().slice(0, 10)}`}>Older reflections <ArrowRight aria-hidden="true" /></Link>}
             </div>
           </nav>
-          <div className="reflection-context-bottom"><Link href="/weekly-reflection" className="journal-utility">This week</Link><ThemeSelector /></div>
+          <div className="reflection-context-bottom"><Link href="/weekly-reflection" className="journal-utility">This week</Link><span className="journal-desktop-utilities"><ThemeSelector /></span></div>
         </section>
-        <section className="journal-page journal-page--right reflection-writing" aria-labelledby="reflection-week-title">
-          <Link href="/dashboard" className="journal-utility study-history-dashboard-link"><ArrowLeft aria-hidden="true" />Back to dashboard</Link>
+        <section id="reflection-right-page" className="journal-page journal-page--right reflection-writing" aria-labelledby="reflection-week-title">
+          <MobileNotebookUtilities />
+          <Link href="/dashboard" className="journal-utility study-history-dashboard-link journal-desktop-utilities"><ArrowLeft aria-hidden="true" />Back to dashboard</Link>
           <header className="reflection-writing-header"><p className="remove-hours-eyebrow">A week in your words</p><h2 id="reflection-week-title">{reflectionWeekLabel(week)}</h2></header>
           {(previous || next) && <nav className="reflection-saved-navigation" aria-label="Browse saved reflections">
             {previous ? <Link href={reflectionHref(previous.weekStart)}><ArrowLeft aria-hidden="true" />Previous reflection</Link> : <span />}
@@ -92,7 +102,6 @@ export default async function WeeklyReflectionPage({ searchParams }: {
           <WeeklyReflectionForm key={week} week={week} saved={!!reflection} initialEntries={{ worked: reflection?.worked ?? "", difficult: reflection?.difficult ?? "", priorities: reflection?.priorities ?? "" }} />
           <footer className="journal-colophon"><span>Notes become progress.</span><Link href="/privacy">Privacy Policy</Link><a href="https://aryamaan-dash.vercel.app/" target="_blank" rel="noreferrer">Made by Aryamaan Dash</a></footer>
         </section>
-      </main>
-    </div>
+    </ResponsiveStudyNotebook>
   );
 }
