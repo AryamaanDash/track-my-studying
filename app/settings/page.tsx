@@ -1,3 +1,5 @@
+import ResponsiveStudyNotebook from "@/components/ResponsiveStudyNotebook";
+import MobileNotebookUtilities from "@/components/MobileNotebookUtilities";
 import { auth, signOut } from "@/auth";
 import DeleteAccountForm from "@/components/DeleteAccountForm";
 import ThemeSelector from "@/components/ThemeSelector";
@@ -50,10 +52,16 @@ export default async function SettingsPage() {
   const joinedLabel = joinedDateFormatter.format(account.createdAt);
 
   return (
-    <div className="journal-desk settings-desk">
-      <main className="study-journal settings-journal">
+    <ResponsiveStudyNotebook
+      deskClassName="settings-desk"
+      journalClassName="settings-journal"
+      leftLabel="Account"
+      rightLabel="Danger zone"
+      leftPageId="settings-left-page"
+      rightPageId="settings-right-page"
+    >
         <section
-          className="journal-page journal-page--left settings-page settings-page--account"
+          id="settings-left-page" className="journal-page journal-page--left settings-page settings-page--account"
           aria-labelledby="settings-title"
         >
           <header className="journal-brand">
@@ -63,6 +71,7 @@ export default async function SettingsPage() {
               <p>Personal Study Journal</p>
             </div>
           </header>
+          <MobileNotebookUtilities />
 
           <div className="settings-intro">
             <p className="settings-eyebrow">Journal settings</p>
@@ -97,7 +106,7 @@ export default async function SettingsPage() {
           </dl>
 
           <footer className="settings-page-footer">
-            <nav className="journal-utilities settings-utilities" aria-label="Settings utilities">
+            <nav className="journal-utilities settings-utilities journal-desktop-utilities" aria-label="Settings utilities">
               <Link href="/dashboard" className="journal-utility">
                 <ArrowLeft aria-hidden="true" />
                 Back to Dashboard
@@ -120,9 +129,10 @@ export default async function SettingsPage() {
         </section>
 
         <section
-          className="journal-page journal-page--right settings-page settings-page--danger"
+          id="settings-right-page" className="journal-page journal-page--right settings-page settings-page--danger"
           aria-labelledby="delete-account-title"
         >
+          <MobileNotebookUtilities />
           <div className="settings-danger-header">
             <p>Danger zone</p>
             <span aria-hidden="true">Final page</span>
@@ -146,7 +156,6 @@ export default async function SettingsPage() {
             when you return.
           </p>
         </section>
-      </main>
-    </div>
+    </ResponsiveStudyNotebook>
   );
 }

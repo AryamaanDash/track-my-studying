@@ -5308,3 +5308,128 @@ html[data-theme="dark"] .journal-back-cover {
   .reflection-writing { border-radius: 0 0 16px 16px; }
   .reflection-history ul { max-height: 180px; overflow-y: auto; }
 }
+
+/* Notebook spreads become a single page on small screens. */
+.journal-mobile-pagination,
+.journal-mobile-utilities {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  .journal-desk--switchable {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .study-journal[data-mobile-page] {
+    min-height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px));
+  }
+
+  .study-journal[data-mobile-page="entry"] > .journal-page-turn-sheet,
+  .study-journal[data-mobile-page="charts"] > .journal-page--left {
+    display: none;
+  }
+
+  .journal-mobile-utilities {
+    display: block;
+    margin-top: 24px;
+  }
+
+  .study-journal[data-mobile-page] .journal-utilities {
+    justify-content: flex-start;
+    gap: 4px 12px;
+  }
+
+  .study-journal[data-mobile-page] .journal-utilities > * {
+    padding: 0;
+    border: 0;
+  }
+
+  .study-journal[data-mobile-page] .journal-utility {
+    min-height: 44px;
+  }
+
+  .journal-mobile-pagination {
+    position: fixed;
+    z-index: 20;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 20px calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--rule-strong);
+    background: var(--paper);
+    color: var(--muted-strong);
+    font-family: var(--journal-serif);
+  }
+
+  .journal-mobile-pagination button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 100px;
+    min-height: 48px;
+    padding: 8px 14px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .journal-mobile-pagination button[aria-pressed="true"] {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  .journal-mobile-pagination button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .journal-mobile-pagination svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 850px) {
+  .study-journal[data-mobile-page="entry"] > .journal-page--right,
+  .study-journal[data-mobile-page] .journal-desktop-utilities {
+    display: none;
+  }
+
+  .journal-mobile-utilities--secondary {
+    flex-shrink: 0;
+    margin: 0 0 24px;
+  }
+
+  .journal-brand + .journal-mobile-utilities--secondary {
+    margin-top: 24px;
+  }
+
+  .study-journal[data-mobile-page] .remove-hours-page--history {
+    height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px));
+    min-height: 0;
+    max-height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px));
+  }
+
+  .study-journal[data-mobile-page] .reflection-context,
+  .study-journal[data-mobile-page] .reflection-writing {
+    min-height: calc(100dvh - 72px - env(safe-area-inset-bottom, 0px));
+    border-radius: 0;
+  }
+
+  .journal-mobile-pagination button {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85rem;
+  }
+
+  .journal-mobile-pagination svg {
+    flex-shrink: 0;
+  }
+}
