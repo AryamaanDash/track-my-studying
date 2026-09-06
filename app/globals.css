@@ -2378,6 +2378,11 @@ select {
     margin-top: 0;
   }
 
+  .study-analytics {
+    /* Keep the tabs below the total when the notebook becomes a single page. */
+    margin-top: 16px;
+  }
+
   .journal-page-turn-sheet {
     height: auto;
     transform-origin: 10% center;
@@ -2519,10 +2524,6 @@ select {
 
   .journal-total {
     margin-top: 8px;
-  }
-
-  .study-analytics {
-    margin-top: -38px;
   }
 
   .analytics-summary-row {

@@ -87,6 +87,7 @@ export default async function DashboardPage() {
 
   return (
     <StudyJournal
+      userId={userId}
       previousSession={
         previousSession ?? undefined
       }

@@ -19,6 +19,7 @@ type PreviousJournalSession = {
 };
 
 export default function StudyJournal({
+  userId,
   previousSession,
   initialChartData,
   initialCalendarData,
@@ -30,6 +31,7 @@ export default function StudyJournal({
   previousSession?: PreviousJournalSession;
   initialChartData: StudyChartData;
   initialCalendarData: StudyCalendarData;
+  userId: string;
   todayLabel: string;
   todayDateKey: string;
   referenceDate: string;
@@ -53,6 +55,7 @@ export default function StudyJournal({
         <WeeklyStudyCelebration sessions={initialChartData.points} />
 
         <StudyEntryPanel
+          userId={userId}
           todayLabel={todayLabel}
           todayDateKey={todayDateKey}
           previousSession={previousSession}

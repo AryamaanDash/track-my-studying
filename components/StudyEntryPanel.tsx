@@ -18,10 +18,12 @@ const previousDateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 export default function StudyEntryPanel({
+  userId,
   todayLabel,
   todayDateKey,
   previousSession,
 }: {
+  userId: string;
   todayLabel: string;
   todayDateKey: string;
   previousSession?: PreviousSession;
@@ -105,7 +107,7 @@ export default function StudyEntryPanel({
         </p>
       </form>
 
-      <FocusTimer />
+      <FocusTimer key={userId} userId={userId} />
 
       <section className="previous-entry" aria-labelledby="previous-entry-heading">
         <h3 id="previous-entry-heading">Previous entry</h3>
