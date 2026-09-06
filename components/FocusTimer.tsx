@@ -120,17 +120,19 @@ export default function FocusTimer({ userId }: { userId: string }) {
         <span className="journal-hand">One session at a time</span>
       </div>
       <p className="focus-timer-description">Your timer is kept in this tab through refreshes and navigation. Pause whenever you need a break.</p>
-      <div className="focus-timer-clock" role="timer" aria-label="Active study time">{clockLabel(elapsed)}</div>
+      <div className="focus-timer-controls">
+        <div className="focus-timer-clock" role="timer" aria-label="Active study time">{clockLabel(elapsed)}</div>
+        <div className="journal-confirmation-actions focus-timer-actions">
+          {(phase === "idle" || phase === "paused") && <button type="button" className="journal-edit-save" disabled={!ready} onClick={start}><Play aria-hidden="true" />{phase === "paused" ? "Resume" : "Start timer"}</button>}
+          {phase === "running" && <button type="button" className="journal-confirmation-keep" onClick={() => stop(false)}><Pause aria-hidden="true" />Pause</button>}
+          {(phase === "running" || phase === "paused") && <button type="button" className="journal-confirmation-keep" onClick={() => stop(true)}><Square aria-hidden="true" />End timer</button>}
+          {phase === "ended" && <button type="button" className="journal-edit-save" onClick={() => dialog.current?.showModal()}>Add entry</button>}
+        </div>
+      </div>
       <p className="focus-timer-status" role="status">
         {!ready ? "Restoring timer…" : message || ({ idle: "Ready when you are", running: "Focusing…", paused: "Paused — take your time", ended: "Session complete — ready to save" }[phase])}
       </p>
       {storageWarning && <p role="alert" className="focus-timer-description">{storageWarning}</p>}
-      <div className="journal-confirmation-actions focus-timer-actions">
-        {(phase === "idle" || phase === "paused") && <button type="button" className="journal-edit-save" disabled={!ready} onClick={start}><Play aria-hidden="true" />{phase === "paused" ? "Resume" : "Start timer"}</button>}
-        {phase === "running" && <button type="button" className="journal-confirmation-keep" onClick={() => stop(false)}><Pause aria-hidden="true" />Pause</button>}
-        {(phase === "running" || phase === "paused") && <button type="button" className="journal-confirmation-keep" onClick={() => stop(true)}><Square aria-hidden="true" />End timer</button>}
-        {phase === "ended" && <button type="button" className="journal-edit-save" onClick={() => dialog.current?.showModal()}>Add entry</button>}
-      </div>
       <dialog ref={dialog} className="journal-confirmation journal-edit-dialog focus-timer-dialog" aria-labelledby="focus-entry-title" aria-describedby="focus-entry-description" onCancel={(event) => { if (isSaving) event.preventDefault(); }}>
         <div className="journal-confirmation-header">
           <div>

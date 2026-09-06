@@ -5109,8 +5109,15 @@ html[data-theme="dark"] .journal-back-cover {
 }
 
 .focus-timer-description { margin: 8px 0; }
-.focus-timer-clock {
+.focus-timer-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
   margin-top: 18px;
+}
+.focus-timer-clock {
   color: var(--ink);
   font-family: var(--journal-serif);
   font-size: clamp(2rem, 7vw, 3rem);
@@ -5118,7 +5125,14 @@ html[data-theme="dark"] .journal-back-cover {
   letter-spacing: 0.06em;
 }
 .focus-timer-status { margin: 4px 0; }
-.focus-timer-actions { justify-content: flex-start; flex-wrap: wrap; margin-top: 14px; }
+.focus-timer-actions {
+  justify-content: flex-end;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 0;
+  margin-left: auto;
+}
+.focus-timer-actions button { width: auto; }
 .focus-timer-dialog { margin: auto; width: min(610px, calc(100% - 36px)); }
 .focus-timer-dialog::backdrop { background: rgba(17, 20, 19, 0.66); }
 .focus-timer-dialog input[readonly] { color: var(--muted-ink); cursor: default; }
