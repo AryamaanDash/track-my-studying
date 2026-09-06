@@ -7,7 +7,6 @@ import type { StudyCalendarData } from "@/lib/study-session-data";
 
 type DaySummary = {
   date: Date;
-  dateKey: string;
   totalHours: number;
   subjectTotals: Record<string, number>;
 };
@@ -110,7 +109,6 @@ export default function StudyCalendar({
         const dateKey = point.date;
         summaries[dateKey] ??= {
           date,
-          dateKey,
           totalHours: 0,
           subjectTotals: {},
         };

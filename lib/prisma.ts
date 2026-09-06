@@ -50,7 +50,7 @@ function getPool() {
   return pool;
 }
 
-export function getPrisma() {
+function getPrisma() {
   if (globalForPrisma.prisma) {
     return globalForPrisma.prisma;
   }

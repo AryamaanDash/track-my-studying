@@ -11,7 +11,7 @@ import type {
 import { Sprout } from "lucide-react";
 import Link from "next/link";
 
-export type PreviousJournalSession = {
+type PreviousJournalSession = {
   subject: string;
   hours: number;
   date: string;

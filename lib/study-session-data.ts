@@ -4,11 +4,11 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getExclusiveUtcDayEnd } from "@/lib/study-date-range";
 
-export const studyTimeframes = ["week", "month", "year", "all"] as const;
+const studyTimeframes = ["week", "month", "year", "all"] as const;
 
 export type StudyTimeframe = (typeof studyTimeframes)[number];
 
-export type AggregatedStudyPoint = {
+type AggregatedStudyPoint = {
   date: string;
   subject: string;
   hours: number;
@@ -24,13 +24,6 @@ export type StudyChartData = {
 export type StudyCalendarData = {
   month: string;
   points: AggregatedStudyPoint[];
-};
-
-type AggregateStudyRow = {
-  date: string;
-  subject: string;
-  hours: number;
-  entryCount: number;
 };
 
 const timeframeDays: Record<Exclude<StudyTimeframe, "all">, number> = {
@@ -58,7 +51,7 @@ export function getUtcMonthKey(date: Date) {
   )}`;
 }
 
-export function getMonthRange(month: string) {
+function getMonthRange(month: string) {
   const match = /^(\d{4})-(\d{2})$/.exec(month);
   if (!match) return null;
 
@@ -75,7 +68,7 @@ export function getMonthRange(month: string) {
   };
 }
 
-function summarizeRows(rows: AggregateStudyRow[]): StudyChartData {
+function summarizeRows(rows: AggregatedStudyPoint[]): StudyChartData {
   return rows.reduce<StudyChartData>(
     (summary, row) => {
       const point = {
@@ -107,7 +100,7 @@ async function getAggregatedStudyPoints({
     ? Prisma.sql`AND "date" >= ${start}`
     : Prisma.empty;
 
-  return prisma.$queryRaw<AggregateStudyRow[]>(Prisma.sql`
+  return prisma.$queryRaw<AggregatedStudyPoint[]>(Prisma.sql`
     SELECT
       to_char(date_trunc('day', "date"), 'YYYY-MM-DD') AS "date",
       "subject",
