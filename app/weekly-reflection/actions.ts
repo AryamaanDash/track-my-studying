@@ -4,11 +4,14 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { parseReflection } from "@/lib/weekly-reflection";
 import { revalidatePath } from "next/cache";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function saveWeeklyReflection(formData: FormData) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return { error: "Please sign in again to save your reflection." };
+  const limit = await checkRateLimit("write", userId);
+  if (!limit.allowed) return { error: limit.error };
 
   let data;
   try {

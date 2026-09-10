@@ -8,6 +8,8 @@ import { auth } from "@/auth";
 import JournalAuthPage from "@/components/JournalAuthPage";
 import DotBorderButton from "@/components/ui/dot-border-button";
 import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const registerErrorMessages: Record<string, string> = {
   missing_fields: "Enter both an email address and a password to create your account.",
@@ -15,6 +17,8 @@ const registerErrorMessages: Record<string, string> = {
   invalid_password: "Choose a password between 8 and 72 characters long.",
   privacy_required: "Acknowledge the Privacy Policy before creating your account.",
   account_exists: "An account with that email address already exists.",
+  rate_limited: "Too many registration attempts. Please wait up to an hour and try again.",
+  temporarily_unavailable: "Registration is temporarily unavailable. Please try again in a minute.",
 };
 
 function getSearchParam(value: string | string[] | undefined) {
@@ -47,6 +51,11 @@ export default async function RegisterPage({
 
   async function registerUser(formData: FormData) {
     "use server";
+
+    const limit = await checkRateLimit("registration", getClientIp(await headers()));
+    if (!limit.allowed) {
+      redirect(`/register?error=${limit.status === 429 ? "rate_limited" : "temporarily_unavailable"}`);
+    }
 
     const emailValue = formData.get("email");
     const passwordValue = formData.get("password");

@@ -1,7 +1,6 @@
 import FocusTimer from "@/components/FocusTimer";
-import { addStudySession } from "@/app/actions";
+import StudyEntryForm from "@/components/StudyEntryForm";
 import StudySessionDateInput from "@/components/StudySessionDateInput";
-import DotBorderButton from "@/components/ui/dot-border-button";
 import { getSubjectColor } from "@/lib/study-colors";
 
 type PreviousSession = {
@@ -43,7 +42,7 @@ export default function StudyEntryPanel({
         </time>
       </div>
 
-      <form action={addStudySession} className="journal-entry-form">
+      <StudyEntryForm>
         <div className="journal-form-group journal-form-group--subject">
           <label htmlFor="study-subject">Subject</label>
           <input
@@ -94,18 +93,7 @@ export default function StudyEntryPanel({
           />
         </div>
 
-        <DotBorderButton
-          type="submit"
-          className="journal-save-button"
-          wrapperClassName="journal-save-button-wrap"
-          pendingLabel="Saving entry…"
-        >
-          Save Entry
-        </DotBorderButton>
-        <p className="journal-form-note">
-          Your saved sessions will appear in your journal and analytics.
-        </p>
-      </form>
+      </StudyEntryForm>
 
       <FocusTimer key={userId} userId={userId} />
 

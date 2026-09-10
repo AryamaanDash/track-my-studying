@@ -35,7 +35,11 @@ export default function RemoveStudySessionButton({
     setIsRemoving(true);
 
     try {
-      await deleteSession(sessionId);
+      const result = await deleteSession(sessionId);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
       router.refresh();
       setIsOpen(false);
     } catch (deleteError) {

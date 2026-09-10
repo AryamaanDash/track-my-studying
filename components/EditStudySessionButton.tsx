@@ -87,7 +87,11 @@ export default function EditStudySessionButton({
 
     startSavingTransition(async () => {
       try {
-        await updateStudySession(sessionId, formData);
+        const result = await updateStudySession(sessionId, formData);
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
         router.refresh();
         setIsOpen(false);
       } catch (updateError) {

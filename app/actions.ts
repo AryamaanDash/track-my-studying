@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { auth, signOut } from "../auth";
 import { prisma } from "../lib/prisma";
 import { getStudyDataCacheTag } from "../lib/study-cache";
+import { checkRateLimit } from "../lib/rate-limit";
 
 function getFormString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -73,6 +74,8 @@ async function getCurrentUserIdOrThrow() {
 
 export async function addStudySession(formData: FormData) {
   const userId = await getCurrentUserIdOrThrow();
+  const limit = await checkRateLimit("write", userId);
+  if (!limit.allowed) return { error: limit.error };
   const studySession = parseStudySessionFormData(formData);
 
   await prisma.studySession.create({
@@ -84,10 +87,13 @@ export async function addStudySession(formData: FormData) {
 
   updateTag(getStudyDataCacheTag(userId));
   revalidatePath("/dashboard");
+  return { success: true };
 }
 
 export async function updateStudySession(id: string, formData: FormData) {
   const userId = await getCurrentUserIdOrThrow();
+  const limit = await checkRateLimit("write", userId);
+  if (!limit.allowed) return { error: limit.error };
   const sessionId = id.trim();
 
   if (!sessionId) {
@@ -110,10 +116,13 @@ export async function updateStudySession(id: string, formData: FormData) {
   updateTag(getStudyDataCacheTag(userId));
   revalidatePath("/dashboard");
   revalidatePath("/remove-hours");
+  return { success: true };
 }
 
 export async function deleteSession(id: string) {
   const userId = await getCurrentUserIdOrThrow();
+  const limit = await checkRateLimit("write", userId);
+  if (!limit.allowed) return { error: limit.error };
   const sessionId = id.trim();
 
   if (!sessionId) {
@@ -134,6 +143,7 @@ export async function deleteSession(id: string) {
   updateTag(getStudyDataCacheTag(userId));
   revalidatePath("/dashboard");
   revalidatePath("/remove-hours");
+  return { success: true };
 }
 
 export type DeleteAccountState = {
@@ -150,6 +160,10 @@ export async function deleteAccount(
     attempt: previousState.attempt + 1,
     error,
   });
+  const passwordLimit = await checkRateLimit("deleteAccount", userId);
+  if (!passwordLimit.allowed) return fail(passwordLimit.error);
+  const writeLimit = await checkRateLimit("write", userId);
+  if (!writeLimit.allowed) return fail(writeLimit.error);
   const passwordValue = formData.get("password");
   const password = typeof passwordValue === "string" ? passwordValue : "";
   const confirmation = getFormString(formData, "confirmation");

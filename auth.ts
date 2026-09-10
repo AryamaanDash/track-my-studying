@@ -1,9 +1,17 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import bcrypt from "bcryptjs";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { prisma } from "./lib/prisma";
+import { checkRateLimit, getClientIp } from "./lib/rate-limit";
+
+class LoginRateLimitError extends CredentialsSignin {
+  constructor(status: 429 | 503) {
+    super();
+    this.code = status === 429 ? "rate_limited" : "temporarily_unavailable";
+  }
+}
 
 function getCredentialValue(value: unknown) {
   return typeof value === "string" ? value : "";
@@ -37,11 +45,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
+        const ipLimit = await checkRateLimit("loginIp", getClientIp(request.headers));
+        if (!ipLimit.allowed) throw new LoginRateLimitError(ipLimit.status);
+
         const email = getCredentialValue(credentials?.email).trim().toLowerCase();
         const password = getCredentialValue(credentials?.password);
 
         if (!email || !password) return null;
+
+        const accountLimit = await checkRateLimit("loginAccount", email);
+        if (!accountLimit.allowed) throw new LoginRateLimitError(accountLimit.status);
 
         const user = await prisma.user.findUnique({
           where: { email },

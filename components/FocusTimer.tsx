@@ -150,7 +150,11 @@ export default function FocusTimer({ userId }: { userId: string }) {
           setError("");
           startSaving(async () => {
             try {
-              await addStudySession(data);
+              const result = await addStudySession(data);
+              if (result.error) {
+                setError(result.error);
+                return;
+              }
               reset();
               setMessage("Focus session saved to your journal.");
             } catch {

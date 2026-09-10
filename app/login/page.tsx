@@ -1,4 +1,4 @@
-import { AuthError } from "next-auth";
+import { AuthError, CredentialsSignin } from "next-auth";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { BookOpen, Lock, Mail } from "lucide-react";
@@ -10,6 +10,8 @@ const loginErrorMessages: Record<string, string> = {
   invalid_credentials: "That email and password combination didn't match our records.",
   missing_fields: "Enter both your email address and password to sign in.",
   server: "We couldn't sign you in right now. Please try again in a moment.",
+  rate_limited: "Too many sign-in attempts. Please wait up to 15 minutes and try again.",
+  temporarily_unavailable: "Sign-in is temporarily unavailable. Please try again in a minute.",
 };
 
 const loginSuccessMessages: Record<string, string> = {
@@ -25,6 +27,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{
     error?: string | string[];
+    code?: string | string[];
     success?: string | string[];
   }>;
 }) {
@@ -37,7 +40,14 @@ export default async function LoginPage({
   }
 
   const params = await searchParams;
-  const errorMessage = loginErrorMessages[getSearchParam(params.error) ?? ""];
+  const requestedError = getSearchParam(params.error);
+  // Auth.js callback requests redirect with error=CredentialsSignin&code=…;
+  // the Server Action below redirects with our application error code directly.
+  const errorCode = requestedError === "CredentialsSignin"
+    ? getSearchParam(params.code) ?? "invalid_credentials"
+    : requestedError;
+  const errorMessage = loginErrorMessages[errorCode ?? ""] ??
+    (requestedError === "CredentialsSignin" ? loginErrorMessages.invalid_credentials : undefined);
   const successMessage = loginSuccessMessages[getSearchParam(params.success) ?? ""];
 
   return (
@@ -79,7 +89,7 @@ export default async function LoginPage({
             redirect("/login?error=missing_fields");
           }
 
-          let errorCode: "invalid_credentials" | "server" | null = null;
+          let errorCode: string | null = null;
 
           try {
             await signIn("credentials", {
@@ -88,7 +98,10 @@ export default async function LoginPage({
               redirectTo: "/dashboard",
             });
           } catch (error) {
-            if (error instanceof AuthError) {
+            if (error instanceof CredentialsSignin &&
+              (error.code === "rate_limited" || error.code === "temporarily_unavailable")) {
+              errorCode = error.code;
+            } else if (error instanceof AuthError) {
               errorCode =
                 error.type === "CredentialsSignin" ? "invalid_credentials" : "server";
             } else {
