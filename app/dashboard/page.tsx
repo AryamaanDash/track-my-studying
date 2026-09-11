@@ -1,3 +1,4 @@
+import { monitorOperation } from "@/lib/monitor-operation";
 import { auth } from "@/auth";
 import StudyJournal from "@/components/StudyJournal";
 import {
@@ -27,11 +28,18 @@ const todayFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-export default async function DashboardPage() {
+async function renderDashboard() {
   const loadStarted = startServerTimer();
   const timings: Record<string, number> = {};
 
-  await connection();
+  if (shouldLogServerPerformance()) {
+    after(() => {
+      logServerPerformance("dashboard", {
+        ...timings,
+        responseFinishedMs: getServerElapsedMs(loadStarted),
+      });
+    });
+  }
 
   const authStarted = startServerTimer();
   const session = await auth();
@@ -42,9 +50,11 @@ export default async function DashboardPage() {
 
   async function measureQuery<T>(name: string, operation: () => Promise<T>) {
     const started = startServerTimer();
-    const result = await operation();
-    timings[name] = getServerElapsedMs(started);
-    return result;
+    try {
+      return await operation();
+    } finally {
+      timings[name] = getServerElapsedMs(started);
+    }
   }
 
   const now = new Date();
@@ -73,17 +83,7 @@ export default async function DashboardPage() {
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
-  const dataLoadMs = getServerElapsedMs(loadStarted);
-
-  if (shouldLogServerPerformance()) {
-    after(() => {
-      logServerPerformance("dashboard", {
-        ...timings,
-        dataLoadMs,
-        totalResponseMs: getServerElapsedMs(loadStarted),
-      });
-    });
-  }
+  timings.dataLoadMs = getServerElapsedMs(loadStarted);
 
   return (
     <StudyJournal
@@ -102,4 +102,11 @@ export default async function DashboardPage() {
       totalHours={totalHours}
     />
   );
+}
+
+export default async function DashboardPage() {
+  // Establish request time before generating IDs or measuring work under
+  // Next's Cache Components prerendering rules.
+  await connection();
+  return monitorOperation("dashboard", renderDashboard);
 }

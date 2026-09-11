@@ -1,7 +1,8 @@
+import { monitorOperation } from "@/lib/monitor-operation";
 import { auth } from "@/auth";
 import { getCachedStudyCalendarData } from "@/lib/study-cache";
 
-export async function GET(request: Request) {
+async function getData(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -19,4 +20,8 @@ export async function GET(request: Request) {
   return Response.json(data, {
     headers: { "Cache-Control": "private, no-store" },
   });
+}
+
+export async function GET(request: Request) {
+  return monitorOperation("study.calendar", () => getData(request));
 }

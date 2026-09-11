@@ -2,6 +2,7 @@ import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { recordRateLimit } from "./monitoring.ts";
 
 export const rateLimitPolicies = {
   proxy: { requests: 300, window: "1 m" },
@@ -82,7 +83,7 @@ export function createRateLimitService(
 
     const secret = env.AUTH_SECRET || env.NEXTAUTH_SECRET || env.BETTER_AUTH_SECRET;
     if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN || !secret) {
-      console.error(`[rate-limit:${policy}] Missing Redis credentials or auth secret`);
+      recordRateLimit(policy, "configuration");
       return unavailable();
     }
 
@@ -97,13 +98,17 @@ export function createRateLimitService(
       const result = await limiter.limit(key);
       // Analytics are disabled, but always settle SDK background work.
       void result.pending.catch(() => {
-        console.error(`[rate-limit:${policy}] Background operation failed`);
+        recordRateLimit(policy, "background");
       });
       // The SDK permits requests on timeout by default. Override that behavior.
-      if (result.reason === "timeout") return unavailable();
+      if (result.reason === "timeout") {
+        recordRateLimit(policy, "timeout");
+        return unavailable();
+      }
       if (result.success) return { allowed: true };
 
       const retryAfterSeconds = Math.max(1, Math.ceil((result.reset - Date.now()) / 1000));
+      recordRateLimit(policy, "exhausted");
       return {
         allowed: false,
         status: 429,
@@ -112,7 +117,7 @@ export function createRateLimitService(
       };
     } catch {
       // Do not log SDK errors: they may contain connection details or identifiers.
-      console.error(`[rate-limit:${policy}] Redis request failed`);
+      recordRateLimit(policy, "redis");
       return unavailable();
     }
   };

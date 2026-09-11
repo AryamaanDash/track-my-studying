@@ -1,12 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { attachDatabasePool } from "@vercel/functions";
-import { Pool } from "pg";
+import { MonitoredPool } from "./monitored-pool.ts";
+import { positiveSetting } from "./monitoring.ts";
 import { getRuntimeDatabaseUrl, runtimeDatabaseUrlErrorMessage } from "./env";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
-  pgPool?: Pool;
+  pgPool?: MonitoredPool;
 };
 
 function getPoolMax() {
@@ -33,9 +34,10 @@ function getPool() {
     throw new Error(runtimeDatabaseUrlErrorMessage());
   }
 
-  const pool = new Pool({
+  const pool = new MonitoredPool({
     connectionString,
     max: getPoolMax(),
+    connectionTimeoutMillis: positiveSetting("PGPOOL_CONNECTION_TIMEOUT_MS", 10000),
     ...(shouldUseSsl(connectionString)
       ? { ssl: true }
       : {}),
@@ -57,6 +59,9 @@ function getPrisma() {
 
   const prisma = new PrismaClient({
     adapter: new PrismaPg(getPool()),
+    // Query/error stdout logs may expose query arguments, including writing.
+    log: [],
+    errorFormat: "minimal",
   });
 
   globalForPrisma.prisma = prisma;
