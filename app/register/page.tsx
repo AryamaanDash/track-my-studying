@@ -1,3 +1,5 @@
+import { markOutcome } from "@/lib/monitoring.ts";
+import { monitorOperation } from "@/lib/monitor-operation";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
@@ -20,6 +22,11 @@ const registerErrorMessages: Record<string, string> = {
   rate_limited: "Too many registration attempts. Please wait up to an hour and try again.",
   temporarily_unavailable: "Registration is temporarily unavailable. Please try again in a minute.",
 };
+
+function rejectRegistration(code: string): never {
+  markOutcome("rejected");
+  redirect(`/register?error=${code}`);
+}
 
 function getSearchParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -52,67 +59,69 @@ export default async function RegisterPage({
   async function registerUser(formData: FormData) {
     "use server";
 
-    const limit = await checkRateLimit("registration", getClientIp(await headers()));
-    if (!limit.allowed) {
-      redirect(`/register?error=${limit.status === 429 ? "rate_limited" : "temporarily_unavailable"}`);
-    }
-
-    const emailValue = formData.get("email");
-    const passwordValue = formData.get("password");
-    const privacyAcknowledgement = formData.get("privacyAcknowledgement");
-    const email =
-      typeof emailValue === "string" ? emailValue.trim().toLowerCase() : "";
-    const password = typeof passwordValue === "string" ? passwordValue : "";
-    const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!email || !password) {
-      redirect("/register?error=missing_fields");
-    }
-
-    if (!hasValidEmail) {
-      redirect("/register?error=invalid_email");
-    }
-
-    if (password.length < 8 || password.length > 72) {
-      redirect("/register?error=invalid_password");
-    }
-
-    if (privacyAcknowledgement !== "acknowledged") {
-      redirect("/register?error=privacy_required");
-    }
-
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true },
-    });
-
-    if (existingUser) {
-      redirect("/register?error=account_exists");
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-    let errorCode: "account_exists" | null = null;
-
-    try {
-      await prisma.user.create({
-        data: {
-          email,
-          passwordHash: hashedPassword,
-        },
-      });
-    } catch (error) {
-      if (isUniqueConstraintError(error)) {
-        errorCode = "account_exists";
-      } else {
-        throw error;
+    return monitorOperation("auth.register", async () => {
+      const limit = await checkRateLimit("registration", getClientIp(await headers()));
+      if (!limit.allowed) {
+        rejectRegistration(limit.status === 429 ? "rate_limited" : "temporarily_unavailable");
       }
-    }
 
-    if (errorCode) {
-      redirect(`/register?error=${errorCode}`);
-    }
+      const emailValue = formData.get("email");
+      const passwordValue = formData.get("password");
+      const privacyAcknowledgement = formData.get("privacyAcknowledgement");
+      const email =
+        typeof emailValue === "string" ? emailValue.trim().toLowerCase() : "";
+      const password = typeof passwordValue === "string" ? passwordValue : "";
+      const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    redirect("/login?success=account_created");
+      if (!email || !password) {
+        rejectRegistration("missing_fields");
+      }
+
+      if (!hasValidEmail) {
+        rejectRegistration("invalid_email");
+      }
+
+      if (password.length < 8 || password.length > 72) {
+        rejectRegistration("invalid_password");
+      }
+
+      if (privacyAcknowledgement !== "acknowledged") {
+        rejectRegistration("privacy_required");
+      }
+
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true },
+      });
+
+      if (existingUser) {
+        rejectRegistration("account_exists");
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 12);
+      let errorCode: "account_exists" | null = null;
+
+      try {
+        await prisma.user.create({
+          data: {
+            email,
+            passwordHash: hashedPassword,
+          },
+        });
+      } catch (error) {
+        if (isUniqueConstraintError(error)) {
+          errorCode = "account_exists";
+        } else {
+          throw error;
+        }
+      }
+
+      if (errorCode) {
+        rejectRegistration(errorCode);
+      }
+
+      redirect("/login?success=account_created");
+    });
   }
 
   return (

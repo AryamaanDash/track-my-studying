@@ -4,9 +4,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { parseReflection } from "@/lib/weekly-reflection";
 import { revalidatePath } from "next/cache";
+import { monitorOperation } from "@/lib/monitor-operation";
+import { reportError } from "@/lib/monitoring.ts";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-export async function saveWeeklyReflection(formData: FormData) {
+async function saveWeeklyReflectionImpl(formData: FormData) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return { error: "Please sign in again to save your reflection." };
@@ -26,9 +28,14 @@ export async function saveWeeklyReflection(formData: FormData) {
       create: { ...data, userId },
       update: data,
     });
-  } catch {
+  } catch (error) {
+    reportError(error);
     return { error: "Your reflection could not be saved. Your writing is still here; please try again." };
   }
   revalidatePath("/weekly-reflection");
   return { success: true };
+}
+
+export async function saveWeeklyReflection(formData: FormData) {
+  return monitorOperation("reflection.save", () => saveWeeklyReflectionImpl(formData));
 }

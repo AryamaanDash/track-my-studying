@@ -151,3 +151,83 @@ docker stop study-rate-limit-test
 
 The integration test uses a loopback REST bridge to the named test container;
 it needs no hosted credentials and does not access application data.
+
+## Operational monitoring
+
+The server emits one JSON object per log line through `console.info`,
+`console.warn`, or `console.error`. Monitoring starts automatically; no new
+service credentials or database tables are needed. Each record includes an
+ISO timestamp, event, level, fixed operation label, generated correlation ID,
+and a process-instance ID. Request-supplied IDs are never trusted. The correlation
+ID groups events within a monitored operation; it does not connect the proxy and
+handler into a distributed trace. The instance ID groups the single shared
+PostgreSQL pool's measurements within a warm application process.
+
+| Event | Meaning and aggregation |
+| --- | --- |
+| `operation.completed` | One record per completed monitored invocation, with `durationMs`, `outcome`, `slow`, `slowThresholdMs`, and HTTP `status` where available. Count records for volume; count `slow=true` for slow operations; calculate latency percentiles from `durationMs`, grouped by operation. |
+| `server.error` | An unexpected failure, with a fixed source/category and an approved dependency code when available. Sum `count` grouped by operation/code. Repeated reporting of the same error object is suppressed. |
+| `rate_limit.rejected` | A limiter decision denied by its allowance, with `policy`, `status=429`, and `count=1`. Sum by policy. This counts limiter decisions even when a form uses an error return or Auth.js uses a redirect instead of an HTTP 429. |
+| `rate_limit.failure` | `configuration`, `redis`, or `timeout` means a fail-closed decision (`status=503`). `background` means SDK background work failed and has no status; exclude it from rejection totals. Sum by policy/reason. |
+| `database.pool` | Per-instance gauges: `max`, `total`, `idle`, `busy`, `waiting`, percentage `utilization`, and `state`. `saturated` means all connections are busy and requests are queued; `recovered` means that condition ended. Do not sum successive gauge samples or treat a full but unqueued pool as saturation. |
+| `database.acquire` | One record for each pool acquisition attempt, including queue/connection duration and outcome; failed attempts have reason `timeout` or `connection`. A later operation error can describe the same failure at the request boundary: do not add these event families together as an error total. |
+| `performance.detail` | The dashboard's existing phase timings, filtered to approved names. `dataLoadMs` covers data preparation; `responseFinishedMs` runs from dashboard entry until Next's `after` callback. |
+| `auth.warning` | An Auth.js warning occurred. Raw SDK warning/debug metadata is omitted. |
+
+Timing covers the dashboard's server work, chart/calendar APIs, Auth.js API
+handlers, login/registration actions, study writes, account deletion, and weekly
+reflection saves. It includes failures and returned rejections. Next's
+`onRequestError` additionally reports unhandled render, route, action, and proxy
+errors outside these wrappers. Redirects and Next rendering signals retain their
+behavior and use `control_flow`; expected validation/authentication failures use
+`rejected`, not unexpected-error reports. An Auth.js redirect can indicate a
+failed operation, so prefer the explicit outcome over HTTP status alone.
+
+Durations measure server operations, not browser latency, network transfer, or
+all later React streaming. Cached responses that do not execute the handler do
+not produce operation records. Killed processes cannot emit completion records;
+use the hosting platform's timeout/crash telemetry alongside these logs.
+
+| Environment variable | Default | Purpose |
+| --- | --- | --- |
+| `SLOW_OPERATION_MS` | `1000` | Inclusive threshold for `slow=true`. |
+| `PGPOOL_CONNECTION_TIMEOUT_MS` | `10000` | Maximum connection-establishment/pool-queue wait before pg rejects the acquisition. |
+| `POOL_LOG_INTERVAL_MS` | `30000` | Minimum interval between unchanged pool-state samples. State transitions log immediately; repeated identical warnings are suppressed. |
+| `SERVER_PERFORMANCE_LOGS` | unset | Set to `1` for dashboard phase details outside development. Details are always enabled in development; core operational events always emit regardless of this flag. |
+
+Invalid, empty, zero, negative, or non-finite monitoring duration settings use
+their defaults. `PGPOOL_MAX` continues to default to 5 connections per instance.
+Pool measurements are triggered by acquisition/release activity, including the
+moment pg enqueues a request; there is no polling interval keeping instances
+alive. Capacity describes the application's local pool, not database-wide
+connection limits. Acquisition duration also includes opening a connection,
+so use it together with `waiting` to diagnose contention.
+
+Logs use an allowlist rather than serializing and then redacting arbitrary
+objects. Passwords/hashes, journal and reflection content, form/response bodies,
+SQL and query arguments, cookies, authorization headers, tokens, connection
+strings, raw URLs/query parameters, emails, IPs, user IDs, and rate-limit hashes
+are excluded. Error messages, original stacks, causes, and arbitrary codes are
+not emitted. Auth.js overrides every logging level; Prisma stdout query/error
+logging is disabled. Monitored unexpected failures are replaced with a generic
+error before reaching framework logs. The error hook also scrubs mutable errors
+before Next's Node production logger receives them; an immutable third-party
+error outside the monitored operations cannot be scrubbed in place. Do not enable
+verbose dependency `DEBUG` logging in production. Host ingress/access logs and
+external collectors have their own privacy and retention settings.
+
+To operate this across deployments, send the JSON log stream to your hosting
+provider's log drain or chosen log/metrics backend and retain the deployment and
+environment metadata supplied by the host. The application does not store global
+counters in process memory and does not provision dashboards, retention, or
+alerts. Suggested queries are: error counts and error rate by operation, p95
+latency and slow percentage by operation, 429/503 counts by policy/reason, and
+pool saturation/acquisition timeouts by instance. Define alert windows and
+thresholds in that backend after establishing a traffic baseline. Never use
+correlation IDs as metric labels; their cardinality grows with request volume.
+
+`npm test` covers secret exclusion (including nested errors and malicious
+labels), safe framework logging, concurrent correlation contexts, redirect
+behavior, threshold boundaries, caught persistence failures, limiter outage
+counts, and the real pg-pool queue/timeout mechanics with an in-memory wire
+client. These tests do not read or modify user data.

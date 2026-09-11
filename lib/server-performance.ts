@@ -1,3 +1,5 @@
+import { recordPerformance, type Operation } from "./monitoring.ts";
+
 type ServerTimings = Record<string, number>;
 
 export function startServerTimer() {
@@ -15,15 +17,8 @@ export function shouldLogServerPerformance() {
   );
 }
 
-export function logServerPerformance(scope: string, timings: ServerTimings) {
+export function logServerPerformance(scope: Operation, timings: ServerTimings) {
   if (!shouldLogServerPerformance()) return;
 
-  const roundedTimings = Object.fromEntries(
-    Object.entries(timings).map(([name, duration]) => [
-      name,
-      Math.round(duration * 10) / 10,
-    ])
-  );
-
-  console.info(`[performance:${scope}]`, roundedTimings);
+  recordPerformance(scope, timings);
 }

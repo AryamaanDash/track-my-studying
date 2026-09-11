@@ -1,3 +1,5 @@
+import { monitorOperation } from "@/lib/monitor-operation";
+import { markOutcome, reportError } from "@/lib/monitoring.ts";
 import { AuthError, CredentialsSignin } from "next-auth";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
@@ -78,38 +80,43 @@ export default async function LoginPage({
         action={async (formData) => {
           "use server";
 
-          const emailValue = formData.get("email");
-          const passwordValue = formData.get("password");
-          const email =
-            typeof emailValue === "string" ? emailValue.trim().toLowerCase() : "";
-          const password =
-            typeof passwordValue === "string" ? passwordValue : "";
+          return monitorOperation("auth.login", async () => {
+            const emailValue = formData.get("email");
+            const passwordValue = formData.get("password");
+            const email =
+              typeof emailValue === "string" ? emailValue.trim().toLowerCase() : "";
+            const password =
+              typeof passwordValue === "string" ? passwordValue : "";
 
-          if (!email || !password) {
-            redirect("/login?error=missing_fields");
-          }
-
-          let errorCode: string | null = null;
-
-          try {
-            await signIn("credentials", {
-              email,
-              password,
-              redirectTo: "/dashboard",
-            });
-          } catch (error) {
-            if (error instanceof CredentialsSignin &&
-              (error.code === "rate_limited" || error.code === "temporarily_unavailable")) {
-              errorCode = error.code;
-            } else if (error instanceof AuthError) {
-              errorCode =
-                error.type === "CredentialsSignin" ? "invalid_credentials" : "server";
-            } else {
-              throw error;
+            if (!email || !password) {
+              markOutcome("rejected");
+              redirect("/login?error=missing_fields");
             }
-          }
 
-          redirect(`/login?error=${errorCode ?? "server"}`);
+            let errorCode: string | null = null;
+
+            try {
+              await signIn("credentials", {
+                email,
+                password,
+                redirectTo: "/dashboard",
+              });
+            } catch (error) {
+              if (error instanceof CredentialsSignin &&
+                (error.code === "rate_limited" || error.code === "temporarily_unavailable")) {
+                markOutcome(error.code === "temporarily_unavailable" ? "error" : "rejected");
+                errorCode = error.code;
+              } else if (error instanceof AuthError) {
+                reportError(error, "auth", "auth.login");
+                errorCode =
+                  error.type === "CredentialsSignin" ? "invalid_credentials" : "server";
+              } else {
+                throw error;
+              }
+            }
+
+            redirect(`/login?error=${errorCode ?? "server"}`);
+          });
         }}
         className="journal-auth-form"
       >

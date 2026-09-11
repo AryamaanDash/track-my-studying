@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { safeAuthLogger } from "./lib/monitoring.ts";
 
 const authSecret =
   process.env.AUTH_SECRET ??
@@ -6,6 +7,8 @@ const authSecret =
   process.env.BETTER_AUTH_SECRET;
 
 export const authConfig = {
+  logger: safeAuthLogger,
+  debug: false,
   secret: authSecret,
   trustHost: true,
   session: { strategy: "jwt" },

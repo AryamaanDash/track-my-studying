@@ -1,8 +1,9 @@
+import { monitorOperation } from "@/lib/monitor-operation";
 import { auth } from "@/auth";
 import { getCachedStudyChartData } from "@/lib/study-cache";
 import { isStudyTimeframe } from "@/lib/study-session-data";
 
-export async function GET(request: Request) {
+async function getData(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -20,4 +21,8 @@ export async function GET(request: Request) {
   return Response.json(data, {
     headers: { "Cache-Control": "private, no-store" },
   });
+}
+
+export async function GET(request: Request) {
+  return monitorOperation("study.chart", () => getData(request));
 }

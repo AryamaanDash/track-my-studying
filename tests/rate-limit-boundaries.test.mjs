@@ -1,3 +1,4 @@
+import { monitored, monitoring, captureLogs } from "./helpers/monitoring.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import nextTesting from "next/experimental/testing/server.js";
@@ -12,7 +13,8 @@ const jsxRuntime = { jsx, jsxs: jsx };
 // Next 16.2.4 still exports the testing helper under its middleware-era name.
 const { unstable_doesMiddlewareMatch: doesProxyMatch } = nextTesting;
 
-test("study writes and account deletion stop before Prisma, bcrypt, or invalidation", async () => {
+test("study writes and account deletion stop before Prisma, bcrypt, or invalidation", async (t) => {
+  captureLogs(t);
   const calls = [];
   const actions = loadIsolatedModule(source("app/actions.ts"), {
     "next/cache": { updateTag: never, revalidatePath: never },
@@ -23,6 +25,8 @@ test("study writes and account deletion stop before Prisma, bcrypt, or invalidat
       user: { findUnique: never, deleteMany: never },
     } },
     "../lib/study-cache": { getStudyDataCacheTag: never },
+    "../lib/monitor-operation": monitored,
+    "../lib/monitoring.ts": monitoring,
     "../lib/rate-limit": { checkRateLimit: async (...args) => { calls.push(args); return rejection; } },
   });
   const form = new FormData();
@@ -38,13 +42,16 @@ test("study writes and account deletion stop before Prisma, bcrypt, or invalidat
   ]);
 });
 
-test("weekly reflections use the same authenticated write budget", async () => {
+test("weekly reflections use the same authenticated write budget", async (t) => {
+  captureLogs(t);
   const calls = [];
   const actions = loadIsolatedModule(source("app/weekly-reflection/actions.ts"), {
     "@/auth": { auth: async () => ({ user: { id: "verified-user" } }) },
     "@/lib/prisma": { prisma: { weeklyReflection: { upsert: never } } },
     "@/lib/weekly-reflection": { parseReflection: never },
     "next/cache": { revalidatePath: never },
+    "@/lib/monitor-operation": monitored,
+    "@/lib/monitoring.ts": monitoring,
     "@/lib/rate-limit": { checkRateLimit: async (...args) => { calls.push(args); return rejection; } },
   });
   assert.deepEqual(await actions.saveWeeklyReflection(new FormData()), { error: rejection.error });
@@ -83,14 +90,15 @@ test("login provider checks IP then normalized account before reading or compari
   }
 });
 
-test("registration action limits direct submissions before database lookup or hashing", async () => {
+test("registration action limits direct submissions before database lookup or hashing", async (t) => {
+  captureLogs(t);
   const calls = [];
   const page = loadIsolatedModule(source("app/register/page.tsx"), {
     "react/jsx-runtime": jsxRuntime,
     bcryptjs: { hash: never },
     "@prisma/client": { Prisma: {} },
     "next/link": "Link",
-    "next/navigation": { redirect: (url) => { throw new Error(`redirect:${url}`); } },
+    "next/navigation": { redirect: (url) => { throw Object.assign(new Error(`redirect:${url}`), { digest: `NEXT_REDIRECT;push;${url};307;` }); } },
     "next/server": { connection: async () => {} },
     "lucide-react": {},
     "@/auth": { auth: async () => null },
@@ -98,6 +106,8 @@ test("registration action limits direct submissions before database lookup or ha
     "@/components/ui/dot-border-button": "DotBorderButton",
     "@/lib/prisma": { prisma: { user: { findUnique: never, create: never } } },
     "next/headers": { headers: async () => new Headers({ "x-test-ip": "192.0.2.1" }) },
+    "@/lib/monitor-operation": monitored,
+    "@/lib/monitoring.ts": monitoring,
     "@/lib/rate-limit": {
       getClientIp: (headers) => headers.get("x-test-ip"),
       checkRateLimit: async (...args) => { calls.push(args); return rejection; },
@@ -110,7 +120,7 @@ test("registration action limits direct submissions before database lookup or ha
 });
 
 test("proxy covers API/actions, excludes assets, preserves auth, and emits 429/503", async () => {
-  const { authConfig } = loadIsolatedModule(source("auth.config.ts"), {});
+  const { authConfig } = loadIsolatedModule(source("auth.config.ts"), { "./lib/monitoring.ts": monitoring });
   let configured;
   let decision = { allowed: true };
   const proxy = loadIsolatedModule(source("proxy.ts"), {

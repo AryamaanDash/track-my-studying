@@ -7,6 +7,8 @@ import { auth, signOut } from "../auth";
 import { prisma } from "../lib/prisma";
 import { getStudyDataCacheTag } from "../lib/study-cache";
 import { checkRateLimit } from "../lib/rate-limit";
+import { monitorOperation } from "../lib/monitor-operation";
+import { ExpectedOperationError } from "../lib/monitoring.ts";
 
 function getFormString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -15,7 +17,7 @@ function getFormString(formData: FormData, key: string) {
 
 function parseStudyDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw new Error("Study date must be a calendar day");
+    throw new ExpectedOperationError("Study date must be a calendar day");
   }
 
   const date = new Date(`${value}T00:00:00.000Z`);
@@ -24,7 +26,7 @@ function parseStudyDate(value: string) {
     Number.isNaN(date.getTime()) ||
     date.toISOString().slice(0, 10) !== value
   ) {
-    throw new Error("Invalid study date");
+    throw new ExpectedOperationError("Invalid study date");
   }
 
   return date;
@@ -38,19 +40,19 @@ function parseStudySessionFormData(formData: FormData) {
   const hours = Number(hoursValue);
 
   if (!subject) {
-    throw new Error("Subject is required");
+    throw new ExpectedOperationError("Subject is required");
   }
 
   if (subject.length > 80) {
-    throw new Error("Subject must be 80 characters or fewer");
+    throw new ExpectedOperationError("Subject must be 80 characters or fewer");
   }
 
   if (!Number.isFinite(hours) || hours <= 0 || hours > 24) {
-    throw new Error("Hours must be a number between 0 and 24");
+    throw new ExpectedOperationError("Hours must be a number between 0 and 24");
   }
 
   if (journal.length > 10000) {
-    throw new Error("Journal must be 10,000 characters or fewer");
+    throw new ExpectedOperationError("Journal must be 10,000 characters or fewer");
   }
 
   return {
@@ -66,13 +68,13 @@ async function getCurrentUserIdOrThrow() {
   const userId = session?.user?.id;
 
   if (!userId) {
-    throw new Error("Not authorized");
+    throw new ExpectedOperationError("Not authorized");
   }
 
   return userId;
 }
 
-export async function addStudySession(formData: FormData) {
+async function addStudySessionImpl(formData: FormData) {
   const userId = await getCurrentUserIdOrThrow();
   const limit = await checkRateLimit("write", userId);
   if (!limit.allowed) return { error: limit.error };
@@ -90,14 +92,14 @@ export async function addStudySession(formData: FormData) {
   return { success: true };
 }
 
-export async function updateStudySession(id: string, formData: FormData) {
+async function updateStudySessionImpl(id: string, formData: FormData) {
   const userId = await getCurrentUserIdOrThrow();
   const limit = await checkRateLimit("write", userId);
   if (!limit.allowed) return { error: limit.error };
   const sessionId = id.trim();
 
   if (!sessionId) {
-    throw new Error("Study session id is required");
+    throw new ExpectedOperationError("Study session id is required");
   }
 
   const studySession = parseStudySessionFormData(formData);
@@ -110,7 +112,7 @@ export async function updateStudySession(id: string, formData: FormData) {
   });
 
   if (count === 0) {
-    throw new Error("Study session not found");
+    throw new ExpectedOperationError("Study session not found");
   }
 
   updateTag(getStudyDataCacheTag(userId));
@@ -119,14 +121,14 @@ export async function updateStudySession(id: string, formData: FormData) {
   return { success: true };
 }
 
-export async function deleteSession(id: string) {
+async function deleteSessionImpl(id: string) {
   const userId = await getCurrentUserIdOrThrow();
   const limit = await checkRateLimit("write", userId);
   if (!limit.allowed) return { error: limit.error };
   const sessionId = id.trim();
 
   if (!sessionId) {
-    throw new Error("Study session id is required");
+    throw new ExpectedOperationError("Study session id is required");
   }
 
   const { count } = await prisma.studySession.deleteMany({
@@ -137,7 +139,7 @@ export async function deleteSession(id: string) {
   });
 
   if (count === 0) {
-    throw new Error("Study session not found");
+    throw new ExpectedOperationError("Study session not found");
   }
 
   updateTag(getStudyDataCacheTag(userId));
@@ -151,7 +153,7 @@ export type DeleteAccountState = {
   error?: string;
 };
 
-export async function deleteAccount(
+async function deleteAccountImpl(
   previousState: DeleteAccountState,
   formData: FormData
 ): Promise<DeleteAccountState> {
@@ -207,4 +209,20 @@ export async function deleteAccount(
   await signOut({ redirectTo: "/" });
 
   return { attempt: previousState.attempt + 1 };
+}
+
+export async function addStudySession(formData: FormData) {
+  return monitorOperation("study.add", () => addStudySessionImpl(formData));
+}
+
+export async function updateStudySession(id: string, formData: FormData) {
+  return monitorOperation("study.update", () => updateStudySessionImpl(id, formData));
+}
+
+export async function deleteSession(id: string) {
+  return monitorOperation("study.delete", () => deleteSessionImpl(id));
+}
+
+export async function deleteAccount(previousState: DeleteAccountState, formData: FormData): Promise<DeleteAccountState> {
+  return monitorOperation("account.delete", () => deleteAccountImpl(previousState, formData));
 }
