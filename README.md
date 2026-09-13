@@ -81,6 +81,43 @@ npm run build:app
 `build:app` builds without deploying migrations. `build` also applies migrations
 using the configured database connection.
 
+## Vercel deployment
+
+The linked Vercel project is `trackmystudying`, serving
+`track-my-studying.vercel.app`. Use the Next.js framework preset and the repository
+root. `package.json` pins Node.js `22.x`; Vercel's
+[package.json version override](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions)
+takes precedence over the project's dashboard selection. Use Node.js 22 for
+local release checks as well.
+
+Keep the deployment build command as `npm run build` so committed Prisma
+migrations run before the production build. Use `npm run build:app` for a local
+production-build check that must not apply migrations. No monitoring migration,
+new service, or additional credential is required.
+
+For each deployed environment, configure `AUTH_SECRET`, the hosted runtime
+database URL and direct migration URL (for example `DATABASE_URL` and
+`DIRECT_URL`), and `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` in Vercel
+Project Settings. Provider URL aliases and their precedence are defined in
+`lib/env.ts`; an existing alias can take priority over `DATABASE_URL` or
+`DIRECT_URL`. Preview credentials must target the intended preview services.
+The local database URLs in `.env.example` and `.env.docker.example` are not
+deployment values. Monitoring settings below are optional server-only overrides;
+their defaults work without adding them in Vercel. `RATE_LIMIT_DISABLED` does
+not bypass the limiter in deployed builds.
+
+After a future deployment, use the project's **Logs** view, select the intended
+environment/deployment, and search for `operation.completed`, `server.error`,
+`rate_limit.failure`, or `database.pool`. Use runtime function logs for operational
+counts; build-time prerender probes can also emit completion records. Check a
+normal signed-in dashboard load and study save for completion records, and a
+normal failed sign-in for `outcome=rejected`. Exercise deliberate outages and
+pool contention only in an isolated preview/test environment. Runtime log
+retention depends on the Vercel plan; see
+[Runtime Logs](https://vercel.com/docs/logs/runtime). Configure retention and
+alerts in a supported drain/backend if longer history or notifications are
+needed; the JSON logger itself does not create alerts.
+
 ## Shared rate limiting
 
 Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to the REST credentials
@@ -182,6 +219,8 @@ errors outside these wrappers. Redirects and Next rendering signals retain their
 behavior and use `control_flow`; expected validation/authentication failures use
 `rejected`, not unexpected-error reports. An Auth.js redirect can indicate a
 failed operation, so prefer the explicit outcome over HTTP status alone.
+An HTTP 5xx or reported unexpected error takes precedence over an earlier
+expected rejection in the same operation.
 
 Durations measure server operations, not browser latency, network transfer, or
 all later React streaming. Cached responses that do not execute the handler do
@@ -210,9 +249,12 @@ strings, raw URLs/query parameters, emails, IPs, user IDs, and rate-limit hashes
 are excluded. Error messages, original stacks, causes, and arbitrary codes are
 not emitted. Auth.js overrides every logging level; Prisma stdout query/error
 logging is disabled. Monitored unexpected failures are replaced with a generic
-error before reaching framework logs. The error hook also scrubs mutable errors
-before Next's Node production logger receives them; an immutable third-party
-error outside the monitored operations cannot be scrubbed in place. Do not enable
+error before reaching framework logs. The error hook also scrubs mutable errors,
+including writable fields on sealed errors, before Next's Node production logger
+receives them, preserving Next's numeric digest and optional internal error code.
+Immutable properties on third-party errors outside the monitored operations
+cannot be scrubbed in place. This hook does not sanitize tracing exporters:
+Next can record an exception on a tracing span before invoking it. Do not enable
 verbose dependency `DEBUG` logging in production. Host ingress/access logs and
 external collectors have their own privacy and retention settings.
 

@@ -5,6 +5,7 @@ import { redirect, notFound } from "next/navigation.js";
 import { monitored, monitoring as m, captureLogs } from "./helpers/monitoring.mjs";
 import { loadIsolatedModule } from "./helpers/load-isolated-module.mjs";
 import { createRateLimitService } from "../lib/rate-limit-core.ts";
+import { createReactServerErrorHandler } from "next/dist/server/app-render/create-error-handler.js";
 
 const secret = "NEVER-LOG-password-journal-reflection-token";
 const source = (path) => new URL(`../${path}`, import.meta.url);
@@ -64,6 +65,42 @@ test("the Next error hook scrubs the object later used by the framework logger",
   assert.equal(records[0].operation, "dashboard");
 });
 
+test("redaction preserves Next's coded digest through its real render error handler", (t) => {
+  captureLogs(t);
+  const error = Object.assign(privateError(), { __NEXT_ERROR_CODE: "E394" });
+  const errors = new Map();
+  let generatedDigest;
+  const handle = createReactServerErrorHandler(false, false, errors, (caught) => {
+    generatedDigest = caught.digest;
+    hook.onRequestError(caught, {}, { routePath: "/dashboard" });
+  });
+  const digest = handle(error);
+  assert.match(generatedDigest, /^\d+@E394$/);
+  assert.equal(digest, generatedDigest);
+  assert.equal(errors.get(digest), error);
+  assert.ok(!inspect(error).includes(secret));
+});
+
+test("sealed writable errors and nonconfigurable metadata do not stop redaction", (t) => {
+  captureLogs(t);
+  for (const error of [Object.seal(privateError()), privateError()]) {
+    if (!Object.isSealed(error)) {
+      Object.defineProperty(error, "fixedMetadata", { value: secret, writable: true });
+    }
+    hook.onRequestError(error, {}, { routePath: "/dashboard" });
+    assert.ok(!inspect(error).includes(secret));
+    assert.ok(!JSON.stringify(error).includes(secret));
+  }
+});
+
+test("untrusted digests are removed and immutable errors cannot break the hook", (t) => {
+  captureLogs(t);
+  const error = Object.assign(privateError(), { digest: secret });
+  hook.onRequestError(error, {}, { routePath: "/dashboard" });
+  assert.equal(error.digest, undefined);
+  assert.doesNotThrow(() => hook.onRequestError(Object.freeze(privateError()), {}, { routePath: "/dashboard" }));
+});
+
 test("Auth.js main and proxy configurations use the safe logger with debugging off", () => {
   const { authConfig } = loadIsolatedModule(source("auth.config.ts"), { "./lib/monitoring.ts": m });
   assert.equal(authConfig.logger, m.safeAuthLogger);
@@ -97,6 +134,16 @@ test("records HTTP rejection status and caught failures without reading response
   assert.equal(records[1].code, "P1001");
   assert.equal(records[2].outcome, "error");
   assert.ok(!JSON.stringify(records).includes(secret));
+});
+
+test("an HTTP failure takes precedence over an earlier expected rejection", async (t) => {
+  const records = captureLogs(t);
+  await monitored.monitorOperation("auth.route", async () => {
+    m.markOutcome("rejected");
+    return new Response(null, { status: 500 });
+  });
+  assert.equal(records[0].status, 500);
+  assert.equal(records[0].outcome, "error");
 });
 
 test("slow thresholds are inclusive, configurable, and fall back for invalid settings", (t) => {

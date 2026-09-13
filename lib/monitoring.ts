@@ -110,29 +110,51 @@ export function safeOperationError() {
 
 export function redactFrameworkError(value: unknown) {
   if (!value || typeof value !== "object") return;
-  const error = value as Error;
   // Next's Node production runtime logs this same object AFTER onRequestError.
   // Retain only its generated digest for React; discard custom properties,
   // inspect/toJSON hooks, causes, query metadata, and the original stack.
-  const digest = property(error, "digest");
-  try {
-    for (const key of Reflect.ownKeys(error)) delete (error as unknown as Record<PropertyKey, unknown>)[key];
-    Object.setPrototypeOf(error, Error.prototype);
-    error.name = "Error";
-    error.message = "An unexpected server error occurred.";
-    error.stack = "Error: An unexpected server error occurred.";
-    if (typeof digest === "string" && /^\d{1,20}$/.test(digest)) {
-      Object.assign(error, { digest });
-    }
-  } catch {
-    // A frozen third-party error must not cause instrumentation itself to fail.
-    // Monitored operations already rethrow newly created, safe errors.
+  const digest = property(value, "digest");
+  const safeProperties = new Map<PropertyKey, unknown>([
+    ["name", "Error"],
+    ["message", "An unexpected server error occurred."],
+    ["stack", "Error: An unexpected server error occurred."],
+  ]);
+  // Next 16 appends an internal error code to some numeric React digests.
+  if (typeof digest === "string" && /^\d{1,20}(?:@E\d{1,6})?$/.test(digest)) {
+    safeProperties.set("digest", digest);
+  }
+  try { Object.setPrototypeOf(value, Error.prototype); } catch { /* May be sealed. */ }
+  let keys: PropertyKey[];
+  try { keys = Reflect.ownKeys(value); } catch { return; }
+  for (const key of keys) {
+    try {
+      // Sealed data properties can still be writable. One immutable property
+      // must not prevent scrubbing the remaining fields or serialization hooks.
+      if (!Reflect.deleteProperty(value, key)) {
+        Reflect.defineProperty(value, key, { value: safeProperties.get(key) });
+      }
+    } catch { /* Best effort for third-party errors. */ }
+  }
+  for (const [key, safeValue] of safeProperties) {
+    try {
+      const descriptor = Reflect.getOwnPropertyDescriptor(value, key);
+      const replaced = Reflect.defineProperty(value, key, descriptor
+        ? { value: safeValue }
+        : { value: safeValue, writable: true, configurable: true });
+      // V8 may implement Error.stack as an accessor with a working setter,
+      // even on a sealed error where it cannot be replaced by a data property.
+      if (!replaced && key === "stack" && descriptor?.set) {
+        Reflect.set(value, key, safeValue);
+      }
+    } catch { /* Frozen properties cannot be scrubbed in place. */ }
   }
 }
 
 export function recordOperation(durationMs: number, fallback: Outcome = "success", status?: number) {
   const outcome = contexts.getStore()?.outcome;
-  const resolvedOutcome = outcome && outcome !== "success" ? outcome : fallback;
+  const resolvedOutcome = outcome === "error" || fallback === "error"
+    ? "error"
+    : outcome && outcome !== "success" ? outcome : fallback;
   const slowThresholdMs = positiveSetting("SLOW_OPERATION_MS", 1000);
   const slow = durationMs >= slowThresholdMs;
   emit("operation.completed", slow || resolvedOutcome === "error" ? "warn" : "info", {
