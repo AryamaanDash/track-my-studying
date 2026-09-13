@@ -274,6 +274,13 @@ select {
   box-shadow: inset -18px 0 25px -24px rgba(53, 42, 27, 0.52), inset 8px 0 10px -11px rgba(255, 255, 255, 0.75);
 }
 
+.journal-page--entry {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-color: color-mix(in srgb, var(--rule-strong) 72%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
 .journal-page--right {
   display: flex;
   flex-direction: column;
@@ -490,7 +497,7 @@ select {
 
 .journal-entry-content {
   display: flex;
-  flex: 1;
+  flex: 1 0 auto;
   flex-direction: column;
   min-height: 0;
   margin-top: clamp(18px, 3vh, 42px);

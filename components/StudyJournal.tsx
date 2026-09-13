@@ -39,7 +39,7 @@ export default function StudyJournal({
 }) {
   return (
     <ResponsiveStudyNotebook>
-      <section id="journal-entry-page" className="journal-page journal-page--left" aria-label="Study entry page">
+      <section id="journal-entry-page" className="journal-page journal-page--left journal-page--entry" aria-label="Study entry page">
         <header className="journal-brand">
           <Sprout aria-hidden="true" />
           <div>
