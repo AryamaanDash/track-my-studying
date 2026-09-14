@@ -26,6 +26,10 @@ const timeframeOptions: Array<{ value: StudyTimeframe; label: string }> = [
   { value: "all", label: "All" },
 ];
 
+type SubjectSort = "most-studied" | "least-studied" | "name-asc" | "name-desc";
+
+const subjectSummaryLimit = 8;
+
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
@@ -56,6 +60,7 @@ type ChartView = {
 export default function StudyCharts({ initialData }: { initialData: StudyChartData }) {
   const [view, setView] = useState<ChartView | null>(null);
   const [error, setError] = useState("");
+  const [subjectSort, setSubjectSort] = useState<SubjectSort>("most-studied");
   const [isPending, startTransition] = useTransition();
   const cachedData = useRef(new Map<StudyTimeframe, StudyChartData>());
   const activeRequest = useRef<AbortController | null>(null);
@@ -162,6 +167,24 @@ export default function StudyCharts({ initialData }: { initialData: StudyChartDa
       ),
     };
   }, [data]);
+
+  const visibleSubjects = useMemo(() => {
+    return [...pieData]
+      .sort((a, b) => {
+        const alphabetical = a.name.localeCompare(b.name);
+        switch (subjectSort) {
+          case "most-studied":
+            return b.value - a.value || alphabetical;
+          case "least-studied":
+            return a.value - b.value || alphabetical;
+          case "name-asc":
+            return alphabetical;
+          case "name-desc":
+            return -alphabetical;
+        }
+      })
+      .slice(0, subjectSummaryLimit);
+  }, [pieData, subjectSort]);
 
   const filteredTotal = data.totalHours;
   const hasData = data.entryCount > 0;
@@ -333,14 +356,32 @@ export default function StudyCharts({ initialData }: { initialData: StudyChartDa
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <ul className="distribution-summary">
-                {pieData.map((entry) => (
+              <div className="distribution-controls">
+                <label className="sr-only" htmlFor="subject-summary-sort">
+                  Sort subjects
+                </label>
+                <select
+                  id="subject-summary-sort"
+                  value={subjectSort}
+                  onChange={(event) => setSubjectSort(event.target.value as SubjectSort)}
+                >
+                  <option value="most-studied">Most studied</option>
+                  <option value="least-studied">Least studied</option>
+                  <option value="name-asc">Alphabetical (A–Z)</option>
+                  <option value="name-desc">Alphabetical (Z–A)</option>
+                </select>
+                <span aria-live="polite">
+                  {visibleSubjects.length} of {pieData.length} subjects
+                </span>
+              </div>
+              <ul className="distribution-summary" aria-label="Subject study totals">
+                {visibleSubjects.map((entry) => (
                   <li key={entry.name}>
                     <span className="distribution-name">
                       <i style={{ backgroundColor: getSubjectColor(entry.name) }} />
-                      {entry.name}
+                      <span title={entry.name}>{entry.name}</span>
                     </span>
-                    <span>
+                    <span className="distribution-value">
                       {((entry.value / filteredTotal) * 100).toFixed(0)}% ·{" "}
                       {entry.value.toFixed(1)}h
                     </span>

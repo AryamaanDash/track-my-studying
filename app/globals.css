@@ -1007,6 +1007,33 @@ select {
   border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
 }
 
+.distribution-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0 0 8px;
+  color: var(--muted-ink);
+  font-size: 0.62rem;
+}
+
+.distribution-controls select {
+  min-width: 0;
+  max-width: 100%;
+  padding: 3px 4px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--muted-strong);
+  font: inherit;
+}
+
+.distribution-controls select:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 2px;
+}
+
 .distribution-summary {
   display: grid;
   gap: 4px;
@@ -1026,6 +1053,16 @@ select {
   overflow: hidden;
   color: var(--muted-strong);
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.distribution-name > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.distribution-value {
+  flex-shrink: 0;
   white-space: nowrap;
 }
 
