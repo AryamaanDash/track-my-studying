@@ -1,12 +1,9 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { createServer } from "node:http";
-import { promisify } from "node:util";
 import test from "node:test";
 import { createRateLimitService } from "../lib/rate-limit-core.ts";
+import { startRedisRestBridge } from "./helpers/redis-rest-bridge.mjs";
 
-const run = promisify(execFile);
 const container = process.env.RATE_LIMIT_REDIS_CONTAINER;
 
 // The real Upstash SDK talks to a loopback REST bridge. Redis itself executes
@@ -14,37 +11,14 @@ const container = process.env.RATE_LIMIT_REDIS_CONTAINER;
 test("Redis shares atomic limits across instances and smooths window boundaries", {
   skip: !container,
 }, async (t) => {
-  const redis = async (command) => {
-    const { stdout } = await run("docker", ["exec", container, "redis-cli", "--json", ...command.map(String)]);
-    const value = stdout.trim();
-    return value.startsWith("error:")
-      ? { error: JSON.parse(value.slice(6)) }
-      : { result: JSON.parse(value) };
-  };
-  const bridge = createServer(async (request, response) => {
-    try {
-      assert.equal(request.headers.authorization, "Bearer local-test-token");
-      let body = "";
-      for await (const chunk of request) body += chunk;
-      const payload = JSON.parse(body);
-      const pipeline = request.url === "/pipeline";
-      const commands = pipeline ? payload : [payload];
-      assert.ok(commands.every(([command]) => ["eval", "evalsha"].includes(command.toLowerCase())));
-      const results = await Promise.all(commands.map(redis));
-      response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify(pipeline ? results : results[0]));
-    } catch {
-      response.writeHead(500);
-      response.end(JSON.stringify({ error: "Test bridge failure" }));
-    }
-  });
-  await new Promise((resolve) => bridge.listen(0, "127.0.0.1", resolve));
-  t.after(() => new Promise((resolve) => bridge.close(resolve)));
+  const bridge = await startRedisRestBridge(container);
+  const { redis } = bridge;
+  t.after(() => bridge.close());
   const prefix = `rate-limit-test:${randomUUID()}`;
   const env = {
     NODE_ENV: "test",
     AUTH_SECRET: "local-test-secret",
-    UPSTASH_REDIS_REST_URL: `http://127.0.0.1:${bridge.address().port}`,
+    UPSTASH_REDIS_REST_URL: bridge.url,
     UPSTASH_REDIS_REST_TOKEN: "local-test-token",
     RATE_LIMIT_PREFIX: prefix,
   };

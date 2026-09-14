@@ -81,6 +81,51 @@ npm run build:app
 `build:app` builds without deploying migrations. `build` also applies migrations
 using the configured database connection.
 
+## Browser tests and CI
+
+The GitHub Actions `checks` job runs lint, TypeScript checks, unit tests, and a
+Chromium end-to-end test against a production build. Require `checks` in the
+GitHub rules for `main` to prevent merging failing changes.
+
+To run the browser suite locally, use Node.js 22 with Docker running:
+
+```bash
+npm ci
+npx playwright install chromium
+npm run test:e2e
+```
+
+`test:e2e` creates uniquely named, disposable PostgreSQL 17 and Redis 7 containers
+using `compose.e2e.yaml`. It overrides every supported database URL alias and
+the auth/Redis settings for its child processes, applies all committed migrations
+with `npm run build`, and runs Playwright against the standalone production server on
+`http://127.0.0.1:3100`. Keep port 3100 free. This rebuilds `.next`, so stop any
+local Next.js dev server first. It never reuses an already-running app server.
+The containers and their data are removed after success or failure; your normal
+Docker development database and hosted databases are not used. A forcibly killed
+run may require cleanup using the unique Compose project name printed at startup.
+
+The tests verify that signed-out visitors cannot access the dashboard, register
+a fresh account, reject a wrong password, sign in, and save a study session.
+They assert the subject, hours, and notes in the dashboard, verify the exact row
+and owner in PostgreSQL, and check that the entry and total survive both a reload
+and a new browser login. A confirmed manual save reloads the dashboard to avoid
+a production React transition leaving the page stuck on stale data; unsuccessful
+saves keep the draft. Authentication and database writes are real. Rate
+limiting stays enabled: a loopback REST bridge connects the real Upstash SDK to
+disposable Redis running its Lua scripts, without hosted Upstash credentials.
+The runner also executes the Redis integration test against that disposable service.
+
+For an interactive Chromium run, use `npm run test:e2e -- --headed`. Failures
+produce screenshots and traces in `test-results/` and an HTML report in
+`playwright-report/`; CI uploads these as the `playwright-failure` artifact.
+Open a local report with `npx playwright show-report`. These files contain only
+the synthetic test account/data and are ignored by Git.
+
+This checks migrations from an empty database and the core browser flow. It
+does not validate Vercel's environment settings, hosted service availability,
+or migration compatibility with existing production data.
+
 ## Vercel deployment
 
 The linked Vercel project is `trackmystudying`, serving

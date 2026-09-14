@@ -15,7 +15,7 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       AUTH_SECRET: ci-only-placeholder-secret-not-for-deployment
 
@@ -32,4 +32,16 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
-      - run: npm run build:app
+      - run: npx playwright install --with-deps chromium
+      - name: Check migrations, production build, and browser flow
+        run: npm run test:e2e
+      - name: Upload browser test diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-failure
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore

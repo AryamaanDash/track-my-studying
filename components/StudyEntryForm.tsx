@@ -25,7 +25,10 @@ export default function StudyEntryForm({ children }: { children: ReactNode }) {
               setError(result.error);
               return;
             }
-            form.reset();
+            // Production RSC transitions can remain pending after the server
+            // commits a save. Reload only on success to show persisted data;
+            // rejected/failed saves above retain the user's draft.
+            window.location.reload();
           } catch {
             setError("Unable to save your entry. Your notes are still here; please try again.");
           }
