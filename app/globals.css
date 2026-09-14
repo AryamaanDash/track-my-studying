@@ -788,6 +788,7 @@ select {
 
 .journal-right-header {
   display: grid;
+  flex-shrink: 0;
   min-height: clamp(84px, 11vh, 108px);
   grid-template-columns: 1fr auto;
   align-items: start;
